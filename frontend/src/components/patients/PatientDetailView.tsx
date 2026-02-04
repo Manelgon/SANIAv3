@@ -153,14 +153,14 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                 <Zap className="h-4 w-4" />
                             </div>
                             <div className={cn(
-                                "absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
+                                "absolute top-full left-0 lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
                                 activeTooltip === 'background' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
                             )}>
                                 <span className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Antecedentes Médicos</span>
                                 <p className="text-xs text-gray-600 leading-relaxed italic">
                                     {patient.background || 'No se han registrado antecedentes de interés.'}
                                 </p>
-                                <div className="absolute -top-1.5 right-4 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <div className="absolute -top-1.5 left-3 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
                             </div>
                         </div>
 
@@ -173,14 +173,14 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                 <Apple className="h-4 w-4" />
                             </div>
                             <div className={cn(
-                                "absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
+                                "absolute top-full left-[-2.5rem] lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
                                 activeTooltip === 'habits' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
                             )}>
                                 <span className="block text-[10px] font-black text-green-600 uppercase mb-2 tracking-widest">Hábitos de Vida</span>
                                 <p className="text-xs text-gray-600 leading-relaxed italic">
                                     {patient.habits || 'No se han registrado hábitos particulares.'}
                                 </p>
-                                <div className="absolute -top-1.5 right-4 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <div className="absolute -top-1.5 left-12 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
                             </div>
                         </div>
 
@@ -197,7 +197,7 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                 <AlertTriangle className="h-4 w-4" />
                             </div>
                             <div className={cn(
-                                "absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 text-left transition-all",
+                                "absolute top-full left-[-5rem] lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 text-left transition-all",
                                 activeTooltip === 'allergies' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
                             )}>
                                 <span className="block text-[10px] font-black text-red-600 uppercase mb-2 tracking-widest">Alergias Conocidas</span>
@@ -216,7 +216,7 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                 ) : (
                                     <p className="text-xs text-gray-500 italic">No se han registrado alergias para este paciente.</p>
                                 )}
-                                <div className="absolute -top-1.5 right-4 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <div className="absolute -top-1.5 left-20 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
                             </div>
                         </div>
                     </div>
