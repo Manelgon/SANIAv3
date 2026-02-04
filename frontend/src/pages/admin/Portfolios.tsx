@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CreatePortfolioModal } from "@/components/portfolios/CreatePortfolioModal";
 import { PortfolioDetailView } from "@/components/portfolios/PortfolioDetailView";
+import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 interface PortfolioWithPractitioner {
     id: string;
@@ -137,138 +138,136 @@ export default function PortfoliosPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900">Gestión de Carteras</h1>
                     <p className="text-sm text-gray-500">Administra las carteras de pacientes asignadas a los facultativos.</p>
                 </div>
-                <div className="flex gap-2 items-center">
-                    <div className="relative">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                         <input
                             type="text"
                             placeholder="Buscar cartera o facultativo..."
-                            className="h-10 w-72 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            className="h-10 w-full sm:w-72 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <TableColumnSelector
-                        columns={allColumns}
-                        visibleColumns={visibleColumns}
-                        onToggleColumn={toggleColumn}
-                    />
-                    <Button onClick={() => setIsCreateModalOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nueva Cartera
-                    </Button>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                        <TableColumnSelector
+                            columns={allColumns}
+                            visibleColumns={visibleColumns}
+                            onToggleColumn={toggleColumn}
+                        />
+                        <Button onClick={() => setIsCreateModalOpen(true)} className="flex-1 sm:flex-none justify-center">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Nueva Cartera
+                        </Button>
+                    </div>
                 </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 text-gray-500 border-b border-gray-100">
-                            <tr>
-                                {visibleColumns.includes('name') && <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px]">Cartera</th>}
-                                {visibleColumns.includes('practitioner') && <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px]">Facultativo</th>}
-                                {visibleColumns.includes('date') && <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px]">Creación</th>}
-                                <th className="px-6 py-4 font-black uppercase tracking-widest text-[10px] text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={visibleColumns.length + 1} className="px-6 py-12 text-center text-gray-500">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-medium">Cargando carteras...</span>
-                                                <button
-                                                    onClick={() => fetchPortfolios()}
-                                                    className="text-xs text-brand-600 hover:text-brand-700 font-bold underline"
-                                                >
-                                                    ¿Tarda demasiado? Reintentar
-                                                </button>
+            <ResponsiveTable<PortfolioWithPractitioner>
+                isLoading={isLoading}
+                rows={portfolios}
+                columns={[
+                    ...allColumns.filter(col => visibleColumns.includes(col.id)).map(col => {
+                        const baseCol = {
+                            key: col.id,
+                            header: col.label,
+                            className: '',
+                        };
+
+                        switch (col.id) {
+                            case 'name':
+                                return {
+                                    ...baseCol, render: (portfolio: PortfolioWithPractitioner) => (
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-11 w-11 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center border border-brand-100 shadow-sm">
+                                                <Briefcase className="h-5 w-5" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-gray-900 text-base">{portfolio.name}</span>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ver pacientes asignados</span>
                                             </div>
                                         </div>
-                                    </td>
-                                </tr>
-                            ) : portfolios.length === 0 ? (
-                                <tr>
-                                    <td colSpan={visibleColumns.length + 1} className="px-6 py-8 text-center text-gray-500">
-                                        No se encontraron carteras
-                                    </td>
-                                </tr>
-                            ) : (
-                                portfolios.map((portfolio) => (
-                                    <tr
-                                        key={portfolio.id}
-                                        className="hover:bg-gray-50/80 transition-all cursor-pointer group rounded-xl"
-                                        onClick={() => {
-                                            const basePath = window.location.pathname.split('/portfolios')[0] + '/portfolios';
-                                            navigate(`${basePath}/${portfolio.id}`);
-                                        }}
-                                    >
-                                        {visibleColumns.includes('name') && (
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-11 w-11 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center border border-brand-100 shadow-sm group-hover:bg-brand-600 group-hover:text-white transition-all duration-300">
-                                                        <Briefcase className="h-5 w-5" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-bold text-gray-900 text-lg group-hover:text-brand-600 transition-colors">{portfolio.name}</span>
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ver pacientes asignados</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('practitioner') && (
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 shadow-inner overflow-hidden">
-                                                        <User className="h-4.5 w-4.5 text-gray-400" />
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-gray-900 font-bold leading-tight">
-                                                            {portfolio.practitioners.first_name} {portfolio.practitioners.last_name_1}
-                                                        </span>
-                                                        <span className="text-[9px] uppercase tracking-wider text-gray-400 font-black mt-0.5">Responsable</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('date') && (
-                                            <td className="px-6 py-5 text-gray-500">
-                                                <div className="flex items-center gap-2 text-xs font-bold">
-                                                    <Calendar className="h-3.5 w-3.5 text-brand-500" />
-                                                    {format(new Date(portfolio.created_at), "d 'de' MMM, yyyy", { locale: es })}
-                                                </div>
-                                            </td>
-                                        )}
-                                        <td className="px-6 py-5 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-brand-50 text-brand-600 p-2 rounded-lg">
-                                                    <ChevronRight className="h-5 w-5" />
-                                                </div>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        // Action menu logic would go here
-                                                    }}
-                                                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-all active:scale-95"
-                                                >
-                                                    <MoreVertical className="h-5 w-5" />
-                                                </button>
+                                    )
+                                };
+                            case 'practitioner':
+                                return {
+                                    ...baseCol, render: (portfolio: PortfolioWithPractitioner) => (
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 shadow-inner overflow-hidden">
+                                                <User className="h-4.5 w-4.5 text-gray-400" />
                                             </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-gray-900 font-bold leading-tight">
+                                                    {portfolio.practitioners.first_name} {portfolio.practitioners.last_name_1}
+                                                </span>
+                                                <span className="text-[9px] uppercase tracking-wider text-gray-400 font-black mt-0.5">Responsable</span>
+                                            </div>
+                                        </div>
+                                    )
+                                };
+                            case 'date':
+                                return {
+                                    ...baseCol, render: (portfolio: PortfolioWithPractitioner) => (
+                                        <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+                                            <Calendar className="h-3.5 w-3.5 text-brand-500" />
+                                            {format(new Date(portfolio.created_at), "d 'de' MMM, yyyy", { locale: es })}
+                                        </div>
+                                    )
+                                };
+                            default:
+                                return { ...baseCol, render: () => null };
+                        }
+                    }),
+                    {
+                        key: 'actions',
+                        header: 'Acciones',
+                        className: 'text-right',
+                        render: (portfolio: PortfolioWithPractitioner) => (
+                            <div className="flex items-center justify-end gap-2">
+                                <button
+                                    onClick={() => {
+                                        const basePath = window.location.pathname.split('/portfolios')[0] + '/portfolios';
+                                        navigate(`${basePath}/${portfolio.id}`);
+                                    }}
+                                    className="p-2 text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-all shadow-sm"
+                                >
+                                    <ChevronRight className="h-5 w-5" />
+                                </button>
+                                <button className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-all active:scale-95">
+                                    <MoreVertical className="h-5 w-5" />
+                                </button>
+                            </div>
+                        )
+                    }
+                ]}
+                getRowKey={(row) => row.id}
+                mobileTitle={(row) => row.name}
+                mobileMeta={(row) => (
+                    <div className="flex items-center gap-2 mt-1">
+                        <User className="h-3.5 w-3.5 text-gray-400" />
+                        <span className="text-xs text-gray-600">
+                            Dr/a. {row.practitioners.first_name} {row.practitioners.last_name_1}
+                        </span>
+                    </div>
+                )}
+                mobileActions={(row) => (
+                    <button
+                        onClick={() => {
+                            const basePath = window.location.pathname.split('/portfolios')[0] + '/portfolios';
+                            navigate(`${basePath}/${row.id}`);
+                        }}
+                        className="p-3 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-xl transition-colors shadow-sm"
+                    >
+                        <ChevronRight className="h-6 w-6" />
+                    </button>
+                )}
+                emptyMessage="No se encontraron carteras"
+            />
 
             {/* Pagination Controls */}
             {totalPages > 1 && (

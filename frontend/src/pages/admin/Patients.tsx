@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { TableColumnSelector, type ColumnDefinition } from "@/components/ui/TableColumnSelector";
-import { Plus, Search, MoreVertical, User, FileText, Calendar, Edit3, Venus, Mars, ChevronRight } from "lucide-react";
+import { Plus, Search, MoreVertical, User, FileText, Calendar, Venus, Mars, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CreatePatientModal } from "@/components/patients/CreatePatientModal";
 import { EditPatientModal } from "@/components/patients/EditPatientModal";
 import { PatientDetailView } from "@/components/patients/PatientDetailView";
+import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 interface Patient {
     id: string;
@@ -58,7 +59,6 @@ export default function PatientsPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [patientToEdit, setPatientToEdit] = useState<Patient | null>(null);
-    const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
     const [patients, setPatients] = useState<Patient[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -176,270 +176,244 @@ export default function PatientsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900">Gestión de Pacientes</h1>
                     <p className="text-sm text-gray-500">Administra la base de datos de pacientes y sus historias clínicas.</p>
                 </div>
-                <div className="flex gap-2 items-center">
-                    <div className="relative">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                         <input
                             type="text"
                             placeholder="Buscar por nombre, CIP o DNI..."
-                            className="h-10 w-72 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            className="h-10 w-full sm:w-72 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <TableColumnSelector
-                        columns={allColumns}
-                        visibleColumns={visibleColumns}
-                        onToggleColumn={toggleColumn}
-                    />
-                    <Button onClick={() => setIsCreateModalOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Nuevo Paciente
-                    </Button>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                        <TableColumnSelector
+                            columns={allColumns}
+                            visibleColumns={visibleColumns}
+                            onToggleColumn={toggleColumn}
+                        />
+                        <Button onClick={() => setIsCreateModalOpen(true)} className="flex-1 sm:flex-none justify-center">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Nuevo Paciente
+                        </Button>
+                    </div>
                 </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                <div className="overflow-x-auto overflow-y-visible pb-20">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 text-gray-500">
-                            <tr>
-                                {visibleColumns.includes('patient') && <th className="px-6 py-3 font-medium">Paciente</th>}
-                                {visibleColumns.includes('cip') && <th className="px-6 py-3 font-medium">CIP</th>}
-                                {visibleColumns.includes('dni') && <th className="px-6 py-3 font-medium text-left">DNI</th>}
-                                {visibleColumns.includes('gender') && <th className="px-6 py-3 font-medium text-center">Sexo</th>}
-                                {visibleColumns.includes('portfolio') && <th className="px-6 py-3 font-medium text-left">Cartera/ID</th>}
-                                {visibleColumns.includes('insured_number') && <th className="px-6 py-3 font-medium text-center">Póliza</th>}
-                                {visibleColumns.includes('blood_group') && <th className="px-6 py-3 font-medium text-center">G.S.</th>}
-                                {visibleColumns.includes('age') && <th className="px-6 py-3 font-medium text-center">Edad</th>}
-                                {visibleColumns.includes('imc') && <th className="px-6 py-3 font-medium text-center">IMC</th>}
-                                {visibleColumns.includes('birth_date') && <th className="px-6 py-3 font-medium">F. Nacimiento</th>}
-                                {visibleColumns.includes('address') && <th className="px-6 py-3 font-medium">Dirección</th>}
-                                {visibleColumns.includes('background') && <th className="px-6 py-3 font-medium">Antecedentes</th>}
-                                {visibleColumns.includes('habits') && <th className="px-6 py-3 font-medium">Hábitos</th>}
-                                {visibleColumns.includes('last_sign_in_at') && <th className="px-6 py-3 font-medium text-center">Última sesión</th>}
-                                {visibleColumns.includes('created_at') && <th className="px-6 py-3 font-medium text-center">Creación</th>}
-                                <th className="px-6 py-3 font-medium text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={visibleColumns.length + 1} className="px-6 py-12 text-center text-gray-500">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-medium">Cargando pacientes...</span>
-                                                <button
-                                                    onClick={() => fetchPatients()}
-                                                    className="text-xs text-brand-600 hover:text-brand-700 font-bold underline"
-                                                >
-                                                    ¿Tarda demasiado? Reintentar
-                                                </button>
+            <ResponsiveTable<Patient>
+                isLoading={isLoading}
+                rows={patients}
+                columns={[
+                    ...allColumns.filter(col => visibleColumns.includes(col.id)).map(col => {
+                        const baseCol = {
+                            key: col.id,
+                            header: col.label,
+                            className: '',
+                        };
+
+                        switch (col.id) {
+                            case 'patient':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <button
+                                            onClick={() => {
+                                                const basePath = window.location.pathname.split('/patients')[0] + '/patients';
+                                                navigate(`${basePath}/${patient.id}`);
+                                            }}
+                                            className="flex items-center gap-3 text-left hover:opacity-75 transition-opacity group"
+                                        >
+                                            <div className="h-9 w-9 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center border border-brand-100 group-hover:bg-brand-100 transition-colors">
+                                                <User className="h-5 w-5" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-gray-900 text-base group-hover:text-brand-600 transition-colors">
+                                                    {patient.last_name_1} {patient.last_name_2}, {patient.first_name}
+                                                </span>
+                                                <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Ver ficha</span>
+                                            </div>
+                                        </button>
+                                    )
+                                };
+                            case 'cip':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <div className="flex items-center gap-2">
+                                            <div className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-mono text-gray-600">
+                                                {patient.cip || 'S/N'}
                                             </div>
                                         </div>
-                                    </td>
-                                </tr>
-                            ) : patients.length === 0 ? (
-                                <tr>
-                                    <td colSpan={visibleColumns.length + 1} className="px-6 py-8 text-center text-gray-500">
-                                        No se encontraron pacientes
-                                    </td>
-                                </tr>
-                            ) : (
-                                patients.map((patient) => (
-                                    <tr key={patient.id} className="hover:bg-gray-50/50 transition-colors">
-                                        {visibleColumns.includes('patient') && (
-                                            <td className="px-6 py-4">
-                                                <button
-                                                    onClick={() => {
-                                                        const basePath = window.location.pathname.split('/patients')[0] + '/patients';
-                                                        navigate(`${basePath}/${patient.id}`);
-                                                    }}
-                                                    className="flex items-center gap-3 text-left hover:opacity-75 transition-opacity group"
-                                                >
-                                                    <div className="h-9 w-9 bg-brand-50 text-brand-600 rounded-lg flex items-center justify-center border border-brand-100 group-hover:bg-brand-100 transition-colors">
-                                                        <User className="h-5 w-5" />
+                                    )
+                                };
+                            case 'dni':
+                                return { ...baseCol, render: (patient: Patient) => <span className="text-sm text-gray-500 font-mono">{patient.dni}</span> };
+                            case 'gender':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <div className="flex justify-center">
+                                            {patient.gender === 'hombre' ? (
+                                                <div className="flex flex-col items-center gap-1 group/gender relative">
+                                                    <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
+                                                        <Mars className="h-4 w-4" />
                                                     </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="font-semibold text-gray-900 text-base group-hover:text-brand-600 transition-colors">
-                                                            {patient.last_name_1} {patient.last_name_2}, {patient.first_name}
-                                                        </span>
-                                                        <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Ver ficha</span>
+                                                    <span className="text-[10px] font-bold text-blue-600 uppercase">H</span>
+                                                </div>
+                                            ) : patient.gender === 'mujer' ? (
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <div className="p-1.5 bg-pink-50 text-pink-600 rounded-lg border border-pink-100">
+                                                        <Venus className="h-4 w-4" />
                                                     </div>
-                                                </button>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('cip') && (
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-mono text-gray-600">
-                                                        {patient.cip || 'S/N'}
-                                                    </div>
+                                                    <span className="text-[10px] font-bold text-pink-600 uppercase">M</span>
                                                 </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('dni') && (
-                                            <td className="px-6 py-4 text-sm text-gray-500 font-mono">
-                                                {patient.dni}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('gender') && (
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex justify-center">
-                                                    {patient.gender === 'hombre' ? (
-                                                        <div className="flex flex-col items-center gap-1 group/gender relative">
-                                                            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg border border-blue-100">
-                                                                <Mars className="h-4 w-4" />
-                                                            </div>
-                                                            <span className="text-[10px] font-bold text-blue-600 uppercase">H</span>
-                                                        </div>
-                                                    ) : patient.gender === 'mujer' ? (
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <div className="p-1.5 bg-pink-50 text-pink-600 rounded-lg border border-pink-100">
-                                                                <Venus className="h-4 w-4" />
-                                                            </div>
-                                                            <span className="text-[10px] font-bold text-pink-600 uppercase">M</span>
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-gray-400 capitalize text-xs">
-                                                            {patient.gender || "-"}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('portfolio') && (
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-semibold text-gray-900">
-                                                        {patient.portfolio_name || "Sin Cartera"}
-                                                    </span>
-                                                    <span className="text-[10px] font-mono text-gray-400">
-                                                        {patient.portfolio_id?.split('-')[0] || "---"}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('insured_number') && (
-                                            <td className="px-6 py-4 text-center text-xs text-gray-500 font-medium">
-                                                {patient.insured_number || "-"}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('blood_group') && (
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="px-2 py-1 bg-red-50 text-red-700 text-[11px] font-bold rounded-md border border-red-100">
-                                                    {patient.blood_group || "-"}
+                                            ) : (
+                                                <span className="text-gray-400 capitalize text-xs">
+                                                    {patient.gender || "-"}
                                                 </span>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('age') && (
-                                            <td className="px-6 py-4 text-center font-medium text-gray-700">
-                                                {calculateAge(patient.birth_date)}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('imc') && (
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="font-bold text-gray-900">{calculateIMC(patient.weight, patient.height)}</span>
-                                                    {(patient.weight && patient.height) && (
-                                                        <span className="text-[9px] text-gray-400 capitalize">{patient.weight}kg / {patient.height}cm</span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('birth_date') && (
-                                            <td className="px-6 py-4 text-gray-500">
-                                                <div className="flex items-center gap-2 text-xs">
-                                                    <Calendar className="h-3.5 w-3.5 text-brand-500" />
-                                                    {format(new Date(patient.birth_date), "dd/MM/yyyy")}
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('address') && (
-                                            <td className="px-6 py-4 text-xs text-gray-500 max-w-[200px] truncate">
-                                                {patient.address?.street ? `${patient.address.street}, ${patient.address.province}` : "-"}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('background') && (
-                                            <td className="px-6 py-4 text-xs text-gray-500 max-w-[200px] truncate">
-                                                {patient.background || "-"}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('habits') && (
-                                            <td className="px-6 py-4 text-xs text-gray-500 max-w-[200px] truncate">
-                                                {patient.habits || "-"}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('last_sign_in_at') && (
-                                            <td className="px-6 py-4 text-center text-sm text-gray-500">
-                                                {patient.last_sign_in_at ? format(new Date(patient.last_sign_in_at), 'dd/MM/yyyy HH:mm', { locale: es }) : "Nunca"}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('created_at') && (
-                                            <td className="px-6 py-4 text-center text-sm text-gray-500">
-                                                <div className="flex items-center gap-2 text-xs justify-center">
-                                                    <FileText className="h-3.5 w-3.5 text-gray-400" />
-                                                    {format(new Date(patient.created_at), "d 'de' MMM, yyyy", { locale: es })}
-                                                </div>
-                                            </td>
-                                        )}
-                                        <td className="px-6 py-4 text-right relative">
-                                            <button
-                                                onClick={() => setOpenDropdownId(openDropdownId === patient.id ? null : patient.id)}
-                                                className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-all active:scale-95"
-                                            >
-                                                <MoreVertical className="h-5 w-5" />
-                                            </button>
-
-                                            {openDropdownId === patient.id && (
-                                                <>
-                                                    <div
-                                                        className="fixed inset-0 z-10"
-                                                        onClick={() => setOpenDropdownId(null)}
-                                                    ></div>
-                                                    <div className={`absolute right-6 w-48 bg-white rounded-xl shadow-xl border border-gray-200 z-20 py-1.5 animate-in fade-in zoom-in-95 duration-100 ${patients.indexOf(patient) >= Math.max(0, patients.length - 2) && patients.length > 2
-                                                        ? "bottom-full mb-1 origin-bottom-right"
-                                                        : "mt-1 origin-top-right"
-                                                        }`}>
-                                                        <button
-                                                            onClick={() => {
-                                                                const basePath = window.location.pathname.split('/patients')[0] + '/patients';
-                                                                navigate(`${basePath}/${patient.id}`);
-                                                                setOpenDropdownId(null);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
-                                                        >
-                                                            <User className="h-4 w-4" />
-                                                            Ver Ficha Completa
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setPatientToEdit(patient);
-                                                                setIsEditModalOpen(true);
-                                                                setOpenDropdownId(null);
-                                                            }}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
-                                                        >
-                                                            <Edit3 className="h-4 w-4" />
-                                                            Editar Información
-                                                        </button>
-                                                    </div>
-                                                </>
                                             )}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                        </div>
+                                    )
+                                };
+                            case 'portfolio':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold text-gray-900">
+                                                {patient.portfolio_name || "Sin Cartera"}
+                                            </span>
+                                            <span className="text-[10px] font-mono text-gray-400">
+                                                {patient.portfolio_id?.split('-')[0] || "---"}
+                                            </span>
+                                        </div>
+                                    )
+                                };
+                            case 'insured_number':
+                                return { ...baseCol, render: (patient: Patient) => <span className="text-xs text-gray-500 font-medium">{patient.insured_number || "-"}</span> };
+                            case 'blood_group':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <span className="px-2 py-1 bg-red-50 text-red-700 text-[11px] font-bold rounded-md border border-red-100">
+                                            {patient.blood_group || "-"}
+                                        </span>
+                                    )
+                                };
+                            case 'age':
+                                return { ...baseCol, render: (patient: Patient) => <span className="font-medium text-gray-700">{calculateAge(patient.birth_date)}</span> };
+                            case 'imc':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <div className="flex flex-col items-center">
+                                            <span className="font-bold text-gray-900">{calculateIMC(patient.weight, patient.height)}</span>
+                                            {(patient.weight && patient.height) && (
+                                                <span className="text-[9px] text-gray-400 capitalize">{patient.weight}kg / {patient.height}cm</span>
+                                            )}
+                                        </div>
+                                    )
+                                };
+                            case 'birth_date':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                            <Calendar className="h-3.5 w-3.5 text-brand-500" />
+                                            {format(new Date(patient.birth_date), "dd/MM/yyyy")}
+                                        </div>
+                                    )
+                                };
+                            case 'address':
+                                return { ...baseCol, render: (patient: Patient) => <span className="text-xs text-gray-500 max-w-[200px] truncate block">{patient.address?.street ? `${patient.address.street}, ${patient.address.province}` : "-"}</span> };
+                            case 'background':
+                                return { ...baseCol, render: (patient: Patient) => <span className="text-xs text-gray-500 max-w-[200px] truncate block">{patient.background || "-"}</span> };
+                            case 'habits':
+                                return { ...baseCol, render: (patient: Patient) => <span className="text-xs text-gray-500 max-w-[200px] truncate block">{patient.habits || "-"}</span> };
+                            case 'last_sign_in_at':
+                                return { ...baseCol, render: (patient: Patient) => <span className="text-sm text-gray-500">{patient.last_sign_in_at ? format(new Date(patient.last_sign_in_at), 'dd/MM/yyyy HH:mm', { locale: es }) : "Nunca"}</span> };
+                            case 'created_at':
+                                return {
+                                    ...baseCol, render: (patient: Patient) => (
+                                        <div className="flex items-center gap-2 text-xs justify-center text-gray-500">
+                                            <FileText className="h-3.5 w-3.5 text-gray-400" />
+                                            {format(new Date(patient.created_at), "d 'de' MMM, yyyy", { locale: es })}
+                                        </div>
+                                    )
+                                };
+                            default:
+                                return { ...baseCol, render: () => null };
+                        }
+                    }),
+                    {
+                        key: 'actions',
+                        header: 'Acciones',
+                        className: 'text-right',
+                        render: (patient: Patient) => (
+                            <div className="flex items-center justify-end gap-2">
+                                <button
+                                    onClick={() => {
+                                        const basePath = window.location.pathname.split('/patients')[0] + '/patients';
+                                        navigate(`${basePath}/${patient.id}`);
+                                    }}
+                                    className="p-2 text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-all shadow-sm"
+                                >
+                                    <ChevronRight className="h-5 w-5" />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setPatientToEdit(patient);
+                                        setIsEditModalOpen(true);
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-all active:scale-95"
+                                >
+                                    <MoreVertical className="h-5 w-5" />
+                                </button>
+                            </div>
+                        )
+                    }
+                ]}
+                getRowKey={(row) => row.id}
+                mobileTitle={(row) => `${row.last_name_1} ${row.last_name_2}, ${row.first_name}`}
+                mobileMeta={(row) => (
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-500">
+                        {row.cip && <span className="font-mono bg-gray-100 px-1 rounded">CIP: {row.cip}</span>}
+                        <span className="font-mono">DNI: {row.dni}</span>
+                    </div>
+                )}
+                mobileBadges={(row) => (
+                    <>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {calculateAge(row.birth_date)} años
+                        </span>
+                        {row.gender && (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase ${row.gender === 'hombre' ? 'bg-blue-50 text-blue-700' :
+                                row.gender === 'mujer' ? 'bg-pink-50 text-pink-700' : 'bg-gray-50 text-gray-600'
+                                }`}>
+                                {row.gender}
+                            </span>
+                        )}
+                        {row.portfolio_name && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-50 text-brand-700 border border-brand-100">
+                                {row.portfolio_name}
+                            </span>
+                        )}
+                    </>
+                )}
+                mobileActions={(row) => (
+                    <div className="flex flex-col gap-2">
+                        <button
+                            onClick={() => {
+                                const basePath = window.location.pathname.split('/patients')[0] + '/patients';
+                                navigate(`${basePath}/${row.id}`);
+                            }}
+                            className="p-3 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-xl transition-colors shadow-sm"
+                        >
+                            <ChevronRight className="h-6 w-6" />
+                        </button>
+                    </div>
+                )}
+                emptyMessage="No se encontraron pacientes"
+            />
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
