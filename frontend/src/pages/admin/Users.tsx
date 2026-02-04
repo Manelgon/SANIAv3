@@ -7,6 +7,7 @@ import { PractitionerDocumentsModal } from "@/components/users/PractitionerDocum
 import { supabase } from "@/lib/supabase";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { ResponsiveTable } from "@/components/ui/ResponsiveTable";
 
 interface AdminUser {
     id: string;
@@ -186,178 +187,194 @@ export default function UsersPage() {
                 </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 text-gray-500">
-                            <tr>
-                                {visibleColumns.includes('user') && <th className="px-6 py-3 font-medium">Usuario</th>}
-                                {visibleColumns.includes('fid') && <th className="px-6 py-3 font-medium">FID</th>}
-                                {visibleColumns.includes('cip') && <th className="px-6 py-3 font-medium">CIP</th>}
-                                {visibleColumns.includes('insured_number') && <th className="px-6 py-3 font-medium">Póliza</th>}
-                                {visibleColumns.includes('role') && <th className="px-6 py-3 font-medium">Rol</th>}
-                                {visibleColumns.includes('portfolio') && <th className="px-6 py-3 font-medium">Cartera</th>}
-                                {visibleColumns.includes('practitioner_id') && <th className="px-6 py-3 font-medium">ID Facultativo</th>}
-                                {visibleColumns.includes('patient_id') && <th className="px-6 py-3 font-medium">ID Paciente</th>}
-                                {visibleColumns.includes('status') && <th className="px-6 py-3 font-medium">Estado</th>}
-                                {visibleColumns.includes('updated_at') && <th className="px-6 py-3 font-medium">Actualizado</th>}
-                                {visibleColumns.includes('last_login') && <th className="px-6 py-3 font-medium">Última Sesión</th>}
-                                <th className="px-6 py-3 font-medium text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan={visibleColumns.length + 1} className="px-6 py-12 text-center text-gray-500">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-medium">Cargando usuarios...</span>
-                                                <button
-                                                    onClick={() => fetchUsers()}
-                                                    className="text-xs text-brand-600 hover:text-brand-700 font-bold underline"
-                                                >
-                                                    ¿Tarda demasiado? Reintentar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : users.length === 0 ? (
-                                <tr>
-                                    <td colSpan={visibleColumns.length + 1} className="px-6 py-8 text-center text-gray-500">
-                                        No se encontraron usuarios
-                                    </td>
-                                </tr>
-                            ) : (
-                                users.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50/50">
-                                        {visibleColumns.includes('user') && (
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-medium text-gray-900">{user.full_name}</span>
-                                                    <span className="text-xs text-gray-500">{user.email}</span>
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('fid') && (
-                                            <td className="px-6 py-4">
-                                                {user.fid ? (
-                                                    <code className={`text-xs font-mono font-semibold ${getRoleTextColor(user.role)}`}>{user.fid}</code>
-                                                ) : (
-                                                    <span className="text-gray-400 text-xs">-</span>
-                                                )}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('cip') && (
-                                            <td className="px-6 py-4">
-                                                {user.cip ? (
-                                                    <code className={`text-xs font-mono font-semibold ${getRoleTextColor(user.role)}`}>{user.cip}</code>
-                                                ) : (
-                                                    <span className="text-gray-400 text-xs">-</span>
-                                                )}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('insured_number') && (
-                                            <td className="px-6 py-4">
-                                                {user.insured_number ? (
-                                                    <code className={`text-xs font-mono font-semibold ${getRoleTextColor(user.role)}`}>{user.insured_number}</code>
-                                                ) : (
-                                                    <span className="text-gray-400 text-xs">-</span>
-                                                )}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('role') && (
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
-                                                    {user.role}
-                                                </span>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('portfolio') && (
-                                            <td className={`px-6 py-4 text-xs ${getRoleTextColor(user.role)}`}>
-                                                {user.portfolio_name || user.portfolio_id || '-'}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('practitioner_id') && (
-                                            <td className={`px-6 py-4 text-xs font-mono ${getRoleTextColor(user.role)}`}>
-                                                {user.practitioner_id ? user.practitioner_id.slice(0, 8) + '...' : '-'}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('patient_id') && (
-                                            <td className={`px-6 py-4 text-xs font-mono ${getRoleTextColor(user.role)}`}>
-                                                {user.patient_id ? user.patient_id.slice(0, 8) + '...' : '-'}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('status') && (
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                    {user.active ? (
-                                                        <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
-                                                            <CheckCircle className="h-3 w-3" /> Activo
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center gap-1 text-xs text-red-700 font-medium">
-                                                            <XCircle className="h-3 w-3" /> Inactivo
-                                                        </span>
-                                                    )}
+            <ResponsiveTable<AdminUser>
+                isLoading={isLoading}
+                rows={users}
+                columns={[
+                    ...allColumns.filter(col => visibleColumns.includes(col.id)).map(col => {
+                        const baseCol = {
+                            key: col.id,
+                            header: col.label,
+                            className: '',
+                        };
 
-                                                    {user.is_confirmed ? (
-                                                        <span className="text-[10px] text-gray-400">Email Confirmado</span>
-                                                    ) : (
-                                                        <span className="text-[10px] text-orange-500 font-medium">Pendiente Confirmación</span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('updated_at') && (
-                                            <td className={`px-6 py-4 text-xs ${getRoleTextColor(user.role)}`}>
-                                                {format(new Date(user.updated_at), "d MMM, HH:mm", { locale: es })}
-                                            </td>
-                                        )}
-                                        {visibleColumns.includes('last_login') && (
-                                            <td className={`px-6 py-4 text-xs ${getRoleTextColor(user.role)}`}>
-                                                {user.last_sign_in_at
-                                                    ? format(new Date(user.last_sign_in_at), "d MMM yyyy, HH:mm", { locale: es })
-                                                    : "Nunca"}
-                                            </td>
-                                        )}
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                {user.role === 'practitioner' && user.practitioner_id && (
-                                                    <button
-                                                        onClick={() => {
-                                                            setSelectedPractitioner({ id: user.practitioner_id!, name: user.full_name });
-                                                            setIsDocsModalOpen(true);
-                                                        }}
-                                                        className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
-                                                        title="Ver documentos profesionales"
-                                                    >
-                                                        <FileText className="h-4 w-4" />
-                                                    </button>
-                                                )}
-                                                <button
-                                                    onClick={() => toggleUserStatus(user.id, user.active)}
-                                                    className={`p-1.5 rounded-md transition-colors ${user.active
-                                                        ? "text-red-600 hover:bg-red-50"
-                                                        : "text-green-600 hover:bg-green-50"
-                                                        }`}
-                                                    title={user.active ? "Desactivar usuario" : "Activar usuario"}
-                                                >
-                                                    {user.active ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
-                                                </button>
-                                                <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        switch (col.id) {
+                            case 'user':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <div className="flex flex-col">
+                                            <span className="font-medium text-gray-900">{user.full_name}</span>
+                                            <span className="text-xs text-gray-500">{user.email}</span>
+                                        </div>
+                                    )
+                                };
+                            case 'fid':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        user.fid ? <code className={`text-xs font-mono font-semibold ${getRoleTextColor(user.role)}`}>{user.fid}</code> : <span className="text-gray-400 text-xs">-</span>
+                                    )
+                                };
+                            case 'cip':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        user.cip ? <code className={`text-xs font-mono font-semibold ${getRoleTextColor(user.role)}`}>{user.cip}</code> : <span className="text-gray-400 text-xs">-</span>
+                                    )
+                                };
+                            case 'insured_number':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        user.insured_number ? <code className={`text-xs font-mono font-semibold ${getRoleTextColor(user.role)}`}>{user.insured_number}</code> : <span className="text-gray-400 text-xs">-</span>
+                                    )
+                                };
+                            case 'role':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
+                                            {user.role}
+                                        </span>
+                                    )
+                                };
+                            case 'portfolio':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <span className={`text-xs ${getRoleTextColor(user.role)}`}>{user.portfolio_name || user.portfolio_id || '-'}</span>
+                                    )
+                                };
+                            case 'practitioner_id':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <span className={`text-xs font-mono ${getRoleTextColor(user.role)}`}>{user.practitioner_id ? user.practitioner_id.slice(0, 8) + '...' : '-'}</span>
+                                    )
+                                };
+                            case 'patient_id':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <span className={`text-xs font-mono ${getRoleTextColor(user.role)}`}>{user.patient_id ? user.patient_id.slice(0, 8) + '...' : '-'}</span>
+                                    )
+                                };
+                            case 'status':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <div className="flex flex-col gap-1">
+                                            {user.active ? (
+                                                <span className="inline-flex items-center gap-1 text-xs text-green-700 font-medium">
+                                                    <CheckCircle className="h-3 w-3" /> Activo
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 text-xs text-red-700 font-medium">
+                                                    <XCircle className="h-3 w-3" /> Inactivo
+                                                </span>
+                                            )}
+                                            {user.is_confirmed ? (
+                                                <span className="text-[10px] text-gray-400">Email Confirmado</span>
+                                            ) : (
+                                                <span className="text-[10px] text-orange-500 font-medium">Pendiente Confirmación</span>
+                                            )}
+                                        </div>
+                                    )
+                                };
+                            case 'updated_at':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <span className={`text-xs ${getRoleTextColor(user.role)}`}>{format(new Date(user.updated_at), "d MMM, HH:mm", { locale: es })}</span>
+                                    )
+                                };
+                            case 'last_login':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        <span className={`text-xs ${getRoleTextColor(user.role)}`}>{user.last_sign_in_at ? format(new Date(user.last_sign_in_at), "d MMM yyyy, HH:mm", { locale: es }) : "Nunca"}</span>
+                                    )
+                                };
+                            default:
+                                return { ...baseCol, render: () => null };
+                        }
+                    }),
+                    {
+                        key: 'actions',
+                        header: 'Acciones',
+                        className: 'text-right',
+                        render: (user: AdminUser) => (
+                            <div className="flex justify-end gap-2">
+                                {user.role === 'practitioner' && user.practitioner_id && (
+                                    <button
+                                        onClick={() => {
+                                            setSelectedPractitioner({ id: user.practitioner_id!, name: user.full_name });
+                                            setIsDocsModalOpen(true);
+                                        }}
+                                        className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-md transition-colors"
+                                        title="Ver documentos profesionales"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => toggleUserStatus(user.id, user.active)}
+                                    className={`p-1.5 rounded-md transition-colors ${user.active
+                                        ? "text-red-600 hover:bg-red-50"
+                                        : "text-green-600 hover:bg-green-50"
+                                        }`}
+                                    title={user.active ? "Desactivar usuario" : "Activar usuario"}
+                                >
+                                    {user.active ? <ShieldOff className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+                                </button>
+                                <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md">
+                                    <MoreVertical className="h-4 w-4" />
+                                </button>
+                            </div>
+                        )
+                    }
+                ]}
+                getRowKey={(user) => user.id}
+                mobileTitle={(user) => user.full_name}
+                mobileMeta={(user) => (
+                    <>
+                        <div className="text-gray-500">{user.email}</div>
+                        {user.fid && <div className="text-xs font-mono mt-0.5">FID: {user.fid}</div>}
+                    </>
+                )}
+                mobileBadges={(user) => (
+                    <>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
+                            {user.role}
+                        </span>
+                        {user.active ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-100 font-medium">
+                                <CheckCircle className="h-3 w-3" /> Activo
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-700 border border-red-100 font-medium">
+                                <XCircle className="h-3 w-3" /> Inactivo
+                            </span>
+                        )}
+                    </>
+                )}
+                mobileActions={(user) => (
+                    <div className="flex flex-col gap-2">
+                        {user.role === 'practitioner' && user.practitioner_id && (
+                            <button
+                                onClick={() => {
+                                    setSelectedPractitioner({ id: user.practitioner_id!, name: user.full_name });
+                                    setIsDocsModalOpen(true);
+                                }}
+                                className="p-2 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors shadow-sm"
+                                title="Ver documentos profesionales"
+                            >
+                                <FileText className="h-5 w-5" />
+                            </button>
+                        )}
+                        <button
+                            onClick={() => toggleUserStatus(user.id, user.active)}
+                            className={`p-2 rounded-lg transition-colors shadow-sm ${user.active
+                                ? "text-red-600 bg-red-50 hover:bg-red-100"
+                                : "text-green-600 bg-green-50 hover:bg-green-100"
+                                }`}
+                        >
+                            {user.active ? <ShieldOff className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
+                        </button>
+                    </div>
+                )}
+                emptyMessage="No se encontraron usuarios"
+            />
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
