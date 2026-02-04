@@ -99,9 +99,6 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                         <ArrowLeft className="h-5 w-5 text-gray-600" />
                     </Button>
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-12 w-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center border border-brand-100 shadow-inner shrink-0">
-                            <User className="h-6 w-6" />
-                        </div>
                         <div className="min-w-0 truncate">
                             <h1 className="text-xl font-bold text-gray-900 leading-tight truncate">
                                 {patient.last_name_1} {patient.last_name_2}, {patient.first_name}

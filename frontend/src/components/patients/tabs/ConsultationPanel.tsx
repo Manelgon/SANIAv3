@@ -331,11 +331,11 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
 
                     {/* Header Minimal */}
                     <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-1">
                             <h2 className="text-lg font-bold text-gray-800">
                                 {activeConsultation ? 'Consulta en Curso' : 'Registro Clínico'}
                             </h2>
-                            <span className="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                            <span className="text-xs font-mono text-gray-400 w-fit rounded">
                                 {new Date().toLocaleDateString()}
                             </span>
                         </div>
