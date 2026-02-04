@@ -20,7 +20,7 @@ export function ConsultationVitals({ constants }: ConsultationVitalsProps) {
     };
 
     return (
-        <div className="col-span-3 space-y-6">
+        <div className="col-span-12 md:col-span-3 space-y-6">
             <div className="flex items-center gap-2 px-1 border-b border-gray-100 pb-2">
                 <Activity className="h-4 w-4 text-brand-500" />
                 <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Biometría y Constantes</h5>

@@ -12,7 +12,7 @@ export function ConsultationDiagnoses({ diagnoses }: ConsultationDiagnosesProps)
     // For this refactor, I will loop through diagnoses to show their notes, but separated to avoid clutter if multiple.
 
     return (
-        <div className="col-span-9 space-y-8">
+        <div className="col-span-12 md:col-span-9 space-y-8">
             {/* Diagnoses List Header */}
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">

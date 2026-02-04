@@ -9,7 +9,7 @@ interface ConsultationHeaderProps {
 
 export function ConsultationHeader({ data }: ConsultationHeaderProps) {
     return (
-        <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm gap-4">
             <div className="flex items-center gap-4">
                 <div className="h-14 w-14 bg-brand-50 rounded-2xl flex items-center justify-center border border-brand-100 shadow-sm">
                     <User className="h-8 w-8 text-brand-600" />
