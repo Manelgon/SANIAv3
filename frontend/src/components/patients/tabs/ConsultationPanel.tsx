@@ -347,9 +347,9 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                         </div>
                     </div>
 
-                    <fieldset disabled={isLoading} className="grid grid-cols-4 gap-6 items-stretch contents">
+                    <fieldset disabled={isLoading} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch contents">
                         {/* ROW 1: Diagnosis Search & Motivo (3/4) | Selected List (1/4) */}
-                        <div className="col-span-3 flex flex-col space-y-4">
+                        <div className="col-span-1 md:col-span-3 flex flex-col space-y-4">
                             {/* Diagnosis Search (Top) */}
                             <div className="space-y-2 relative">
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Diagnóstico (CIE-10)</label>
@@ -402,7 +402,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                             </div>
                         </div>
 
-                        <div className="col-span-1 flex flex-col space-y-2">
+                        <div className="col-span-1 md:col-span-1 flex flex-col space-y-2">
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Diagnósticos Seleccionados</label>
                             <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[220px] max-h-[220px]">
                                 <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
@@ -519,7 +519,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
 
 
                         {/* ROW 2: Exploration (3/4) | Vitals (1/4) */}
-                        <div className="col-span-3 flex flex-col space-y-2">
+                        <div className="col-span-1 md:col-span-3 flex flex-col space-y-2">
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Exploración Física</label>
                             <textarea
                                 className="flex-1 w-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all min-h-[200px]"
@@ -528,7 +528,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                             />
                         </div>
 
-                        <div className="col-span-1 flex flex-col space-y-2">
+                        <div className="col-span-1 md:col-span-1 flex flex-col space-y-2">
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Constantes Vitales</label>
                             <div className="flex-1 bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4 flex flex-col justify-center">
 
@@ -570,7 +570,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
 
 
                         {/* ROW 3: Aproximacion (3/4) | Empty (1/4) */}
-                        <div className="col-span-3 space-y-2">
+                        <div className="col-span-1 md:col-span-3 space-y-2">
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Aproximación Diagnóstica</label>
                             <textarea
                                 className="w-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all min-h-[100px]"
@@ -578,13 +578,13 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                 {...register('aproximacion')}
                             />
                         </div>
-                        <div className="col-span-1">
-                            {/* Empty space */}
+                        <div className="hidden md:block col-span-1">
+                            {/* Empty space only visible on desktop to maintain grid alignment */}
                         </div>
 
 
                         {/* ROW 4: Treatment (Full width) */}
-                        <div className="col-span-4 space-y-2">
+                        <div className="col-span-1 md:col-span-4 space-y-2">
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Plan / Tratamiento</label>
                             <textarea
                                 className="w-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all min-h-[120px]"

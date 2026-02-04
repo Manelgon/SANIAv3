@@ -93,30 +93,30 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             {/* Header / Navigation */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" onClick={onBack} className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                <div className="flex items-center gap-4 min-w-0">
+                    <Button variant="ghost" size="sm" onClick={onBack} className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors shrink-0">
                         <ArrowLeft className="h-5 w-5 text-gray-600" />
                     </Button>
-                    <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center border border-brand-100 shadow-inner">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-12 w-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center border border-brand-100 shadow-inner shrink-0">
                             <User className="h-6 w-6" />
                         </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900 leading-tight">
+                        <div className="min-w-0 truncate">
+                            <h1 className="text-xl font-bold text-gray-900 leading-tight truncate">
                                 {patient.last_name_1} {patient.last_name_2}, {patient.first_name}
                             </h1>
-                            <div className="flex items-center gap-3 mt-0.5">
-                                <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-mono text-gray-600 uppercase tracking-tight">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
+                                <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-mono text-gray-600 uppercase tracking-tight whitespace-nowrap">
                                     CIP: {patient.cip || 'S/N'}
                                 </span>
-                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Ficha del Paciente</span>
+                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap hidden sm:inline-block">Ficha del Paciente</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-sm w-full md:w-auto">
+                <div className="flex flex-wrap items-center gap-4 text-sm pt-2 lg:pt-0 border-t lg:border-t-0 border-gray-100 w-full lg:w-auto justify-between lg:justify-end">
                     {/* Hover Stats */}
                     <div className="flex items-center gap-2 border-r pr-4 border-gray-100 h-10">
                         {/* Antecedentes Hover */}
@@ -157,7 +157,7 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                             )}>
                                 <AlertTriangle className="h-4 w-4" />
                             </div>
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
+                            <div className="absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
                                 <span className="block text-[10px] font-black text-red-600 uppercase mb-2 tracking-widest">Alergias Conocidas</span>
                                 {allergies.length > 0 ? (
                                     <ul className="space-y-1.5">
@@ -174,12 +174,12 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                 ) : (
                                     <p className="text-xs text-gray-500 italic">No se han registrado alergias para este paciente.</p>
                                 )}
-                                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <div className="absolute -top-1.5 right-4 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="hidden md:flex flex-col items-end border-r pr-4 border-gray-100">
+                    <div className="hidden sm:flex flex-col items-end border-r pr-4 border-gray-100">
                         <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Última Consulta</span>
                         <div className="flex items-center gap-1.5">
                             <HistoryIcon className="h-3 w-3 text-brand-500" />
