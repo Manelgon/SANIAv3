@@ -339,7 +339,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                 {new Date().toLocaleDateString()}
                             </span>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="hidden md:flex gap-3">
                             <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading} className="bg-brand-600 hover:bg-brand-700 text-white shadow-sm">
                                 {isLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
                                 Guardar Consulta
@@ -591,6 +591,14 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                 placeholder="Tratamiento y recomendaciones..."
                                 {...register('tratamiento')}
                             />
+                        </div>
+
+                        {/* Mobile Save Button (Bottom) */}
+                        <div className="col-span-1 md:hidden pt-4 pb-8">
+                            <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading} className="w-full h-12 text-lg bg-brand-600 hover:bg-brand-700 text-white shadow-md">
+                                {isLoading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
+                                Guardar Consulta
+                            </Button>
                         </div>
 
                     </fieldset>

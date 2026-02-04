@@ -90,6 +90,16 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
         return imc.toFixed(1);
     };
 
+    const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+
+    const toggleTooltip = (id: string) => {
+        if (activeTooltip === id) {
+            setActiveTooltip(null);
+        } else {
+            setActiveTooltip(id);
+        }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             {/* Header / Navigation */}
@@ -99,8 +109,11 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                         <ArrowLeft className="h-5 w-5 text-gray-600" />
                     </Button>
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="min-w-0 truncate">
-                            <h1 className="text-xl font-bold text-gray-900 leading-tight truncate">
+                        <div
+                            className="min-w-0 truncate relative cursor-pointer"
+                            onClick={() => toggleTooltip('patient-info')}
+                        >
+                            <h1 className="text-xl font-bold text-gray-900 leading-tight truncate hover:text-brand-600 transition-colors">
                                 {patient.last_name_1} {patient.last_name_2}, {patient.first_name}
                             </h1>
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
@@ -108,6 +121,21 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                     CIP: {patient.cip || 'S/N'}
                                 </span>
                                 <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap hidden sm:inline-block">Ficha del Paciente</span>
+                            </div>
+
+                            {/* Patient Info Tooltip */}
+                            <div className={cn(
+                                "absolute top-full left-0 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all text-left",
+                                activeTooltip === 'patient-info' ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+                            )}>
+                                <span className="block text-[10px] font-black text-brand-600 uppercase mb-2 tracking-widest">Información del Paciente</span>
+                                <div className="space-y-1">
+                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">Nombre:</strong> {patient.first_name} {patient.last_name_1} {patient.last_name_2}</p>
+                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">DNI:</strong> {patient.dni}</p>
+                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">CIP:</strong> {patient.cip || 'S/N'}</p>
+                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">Edad:</strong> {calculateAge(patient.birth_date)} años</p>
+                                </div>
+                                <div className="absolute -top-1.5 left-4 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
                             </div>
                         </div>
                     </div>
@@ -118,43 +146,60 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                     <div className="flex items-center gap-2 border-r pr-4 border-gray-100 h-10">
                         {/* Antecedentes Hover */}
                         <div className="group relative">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors cursor-help">
+                            <div
+                                onClick={() => toggleTooltip('background')}
+                                className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors cursor-help"
+                            >
                                 <Zap className="h-4 w-4" />
                             </div>
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <div className={cn(
+                                "absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
+                                activeTooltip === 'background' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
+                            )}>
                                 <span className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Antecedentes Médicos</span>
                                 <p className="text-xs text-gray-600 leading-relaxed italic">
                                     {patient.background || 'No se han registrado antecedentes de interés.'}
                                 </p>
-                                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <div className="absolute -top-1.5 right-4 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
                             </div>
                         </div>
 
                         {/* Hábitos Hover */}
                         <div className="group relative">
-                            <div className="p-2 bg-green-50 text-green-600 rounded-lg border border-green-100 hover:bg-green-100 transition-colors cursor-help">
+                            <div
+                                onClick={() => toggleTooltip('habits')}
+                                className="p-2 bg-green-50 text-green-600 rounded-lg border border-green-100 hover:bg-green-100 transition-colors cursor-help"
+                            >
                                 <Apple className="h-4 w-4" />
                             </div>
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <div className={cn(
+                                "absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
+                                activeTooltip === 'habits' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
+                            )}>
                                 <span className="block text-[10px] font-black text-green-600 uppercase mb-2 tracking-widest">Hábitos de Vida</span>
                                 <p className="text-xs text-gray-600 leading-relaxed italic">
                                     {patient.habits || 'No se han registrado hábitos particulares.'}
                                 </p>
-                                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <div className="absolute -top-1.5 right-4 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
                             </div>
                         </div>
 
                         {/* Alergias Hover */}
                         <div className="group relative">
-                            <div className={cn(
-                                "p-2 rounded-lg border transition-colors cursor-help",
-                                allergies.length > 0
-                                    ? "bg-red-50 text-red-600 border-red-100 hover:bg-red-100"
-                                    : "bg-gray-50 text-gray-400 border-gray-100 hover:bg-gray-100 font-bold"
-                            )}>
+                            <div
+                                onClick={() => toggleTooltip('allergies')}
+                                className={cn(
+                                    "p-2 rounded-lg border transition-colors cursor-help",
+                                    allergies.length > 0
+                                        ? "bg-red-50 text-red-600 border-red-100 hover:bg-red-100"
+                                        : "bg-gray-50 text-gray-400 border-gray-100 hover:bg-gray-100 font-bold"
+                                )}>
                                 <AlertTriangle className="h-4 w-4" />
                             </div>
-                            <div className="absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 text-left">
+                            <div className={cn(
+                                "absolute top-full right-0 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 text-left transition-all",
+                                activeTooltip === 'allergies' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
+                            )}>
                                 <span className="block text-[10px] font-black text-red-600 uppercase mb-2 tracking-widest">Alergias Conocidas</span>
                                 {allergies.length > 0 ? (
                                     <ul className="space-y-1.5">
