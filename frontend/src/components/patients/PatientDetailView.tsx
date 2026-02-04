@@ -3,7 +3,7 @@ import { ConsultationPanel } from './tabs/ConsultationPanel';
 import { ConsultationHistory } from './tabs/ConsultationHistory';
 import { DiagnosesTab } from './tabs/DiagnosesTab';
 import { DocumentsTab } from './tabs/DocumentsTab';
-import { ArrowLeft, User, ClipboardList, Info, Calendar, Phone, Activity, Venus, Mars, AlertTriangle, Zap, Apple, History as HistoryIcon, FileText } from 'lucide-react';
+import { ArrowLeft, User, ClipboardList, Info, Calendar, Phone, Activity, Venus, Mars, AlertTriangle, Zap, Apple, History as HistoryIcon, FileText, Droplet } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
