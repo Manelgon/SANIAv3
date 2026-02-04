@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import LoginPage from '@/pages/Login';
 import PortalPage from '@/pages/Portal';
+import UpdatePasswordPage from '@/pages/UpdatePassword';
 
 import AdminLayout from '@/layouts/AdminLayout';
 import PractitionerLayout from '@/layouts/PractitionerLayout';
@@ -41,6 +42,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/update-password" element={<UpdatePasswordPage />} />
 
         {/* Practitioner Dashboard */}
         <Route

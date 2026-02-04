@@ -23,6 +23,12 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [authError, setAuthError] = useState<string | null>(null);
 
+    // Reset Password State
+    const [isResetOpen, setIsResetOpen] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [isResetLoading, setIsResetLoading] = useState(false);
+    const [resetMessage, setResetMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
     const {
         register,
         handleSubmit,
@@ -74,6 +80,40 @@ export default function LoginPage() {
         }
     };
 
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!resetEmail) return;
+
+        setIsResetLoading(true);
+        setResetMessage(null);
+
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+                redirectTo: `${window.location.origin}/update-password`,
+            });
+
+            if (error) throw error;
+
+            setResetMessage({
+                type: 'success',
+                text: 'Si el correo existe en nuestro sistema, recibirás un enlace para restablecer tu contraseña.'
+            });
+            setTimeout(() => {
+                setIsResetOpen(false);
+                setResetMessage(null);
+                setResetEmail('');
+            }, 3000);
+
+        } catch (error: any) {
+            setResetMessage({
+                type: 'error',
+                text: error.message || 'Error al enviar el correo de recuperación'
+            });
+        } finally {
+            setIsResetLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-white px-4">
             <div className="w-full max-w-sm space-y-8">
@@ -97,14 +137,25 @@ export default function LoginPage() {
                             error={errors.email?.message}
                             {...register('email')}
                         />
-                        <Input
-                            id="password"
-                            label="Contraseña"
-                            type="password"
-                            placeholder="••••••••"
-                            error={errors.password?.message}
-                            {...register('password')}
-                        />
+                        <div>
+                            <Input
+                                id="password"
+                                label="Contraseña"
+                                type="password"
+                                placeholder="••••••••"
+                                error={errors.password?.message}
+                                {...register('password')}
+                            />
+                            <div className="flex justify-end mt-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsResetOpen(true)}
+                                    className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+                                >
+                                    ¿Has olvidado tu contraseña?
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     {authError && (
@@ -119,6 +170,67 @@ export default function LoginPage() {
                     </Button>
                 </form>
             </div>
+
+            {/* Password Reset Modal */}
+            {isResetOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-6 relative animate-in fade-in zoom-in-95 duration-200">
+                        <div className="mb-4">
+                            <h3 className="text-xl font-semibold text-gray-900">Restablecer Contraseña</h3>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleResetPassword} className="space-y-4">
+                            <div>
+                                <label htmlFor="reset-email" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Correo Electrónico
+                                </label>
+                                <input
+                                    id="reset-email"
+                                    type="email"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                                    placeholder="nombre@ejemplo.com"
+                                    required
+                                />
+                            </div>
+
+                            {resetMessage && (
+                                <div className={`p-3 rounded-md text-sm ${resetMessage.type === 'success'
+                                        ? 'bg-green-50 text-green-700 border border-green-200'
+                                        : 'bg-red-50 text-red-700 border border-red-200'
+                                    }`}>
+                                    {resetMessage.text}
+                                </div>
+                            )}
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsResetOpen(false);
+                                        setResetMessage(null);
+                                        setResetEmail('');
+                                    }}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500"
+                                >
+                                    Cancelar
+                                </button>
+                                <Button
+                                    type="submit"
+                                    isLoading={isResetLoading}
+                                    className="bg-brand-600 hover:bg-brand-700 text-white"
+                                >
+                                    Enviar Instrucciones
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
