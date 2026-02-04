@@ -159,31 +159,33 @@ export default function UsersPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-gray-900">Gestión de Usuarios</h1>
                     <p className="text-sm text-gray-500">Administra los usuarios, roles y accesos del sistema.</p>
                 </div>
-                <div className="flex gap-2 items-center">
-                    <div className="relative">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                         <input
                             type="text"
                             placeholder="Buscar usuario..."
-                            className="h-10 w-64 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                            className="h-10 w-full sm:w-64 rounded-md border border-gray-300 bg-white pl-9 pr-4 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <TableColumnSelector
-                        columns={allColumns}
-                        visibleColumns={visibleColumns}
-                        onToggleColumn={toggleColumn}
-                    />
-                    <Button onClick={() => setIsCreateModalOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Añadir Usuario
-                    </Button>
+                    <div className="flex gap-2 w-full sm:w-auto">
+                        <TableColumnSelector
+                            columns={allColumns}
+                            visibleColumns={visibleColumns}
+                            onToggleColumn={toggleColumn}
+                        />
+                        <Button onClick={() => setIsCreateModalOpen(true)} className="flex-1 sm:flex-none justify-center">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Añadir Usuario
+                        </Button>
+                    </div>
                 </div>
             </div>
 
