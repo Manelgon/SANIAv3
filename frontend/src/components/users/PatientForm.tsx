@@ -141,10 +141,25 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
                 if (!pId) {
                     const { data: pData } = await (supabase
                         .from('practitioners')
-                        .select('id')
+                        .select('id, first_name, last_name_1, last_name_2') // Fetch name details too
                         .eq('user_id', (user as any).id)
                         .single() as any);
                     pId = pData?.id;
+
+                    if (pData) {
+                        setPractitioners([pData]);
+                    }
+                } else {
+                    // If we have the ID from userData, we still need the name details for the dropdown
+                    const { data: pData } = await supabase
+                        .from('practitioners')
+                        .select('id, first_name, last_name_1, last_name_2')
+                        .eq('id', pId)
+                        .single();
+
+                    if (pData) {
+                        setPractitioners([pData]);
+                    }
                 }
 
                 if (pId) {
@@ -304,27 +319,25 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
             {/* 0. Datos del Facultativo (Top Section) */}
             <div className="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 className="text-lg font-medium text-brand-600 border-b pb-2">Asignación de Facultativo</h3>
-                <div className={`grid grid-cols-1 ${currentUserRole === 'super_admin' ? 'md:grid-cols-2' : ''} gap-4`}>
-                    {currentUserRole === 'super_admin' && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Facultativo Responsable <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 disabled:bg-gray-100"
-                                value={selectedPractitionerId || ''}
-                                onChange={(e) => setSelectedPractitionerId(e.target.value)}
-                                disabled={isEdit && currentUserRole !== 'super_admin'}
-                            >
-                                <option value="">-- Seleccionar Facultativo --</option>
-                                {practitioners.map(p => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.first_name} {p.last_name_1} {p.last_name_2}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-4`}>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Facultativo Responsable <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-70 disabled:bg-gray-100 disabled:text-gray-500"
+                            value={selectedPractitionerId || ''}
+                            onChange={(e) => setSelectedPractitionerId(e.target.value)}
+                            disabled={currentUserRole !== 'super_admin'}
+                        >
+                            <option value="">-- Seleccionar Facultativo --</option>
+                            {practitioners.map(p => (
+                                <option key={p.id} value={p.id}>
+                                    {p.first_name} {p.last_name_1} {p.last_name_2}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
