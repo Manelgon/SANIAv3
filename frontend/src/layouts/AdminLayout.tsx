@@ -104,7 +104,7 @@ export default function AdminLayout() {
                         </div>
 
                         <div className="flex items-center gap-1 md:gap-2 border-l border-gray-200 pl-2 md:pl-4">
-                            <button className="hidden sm:block p-2 text-gray-500 hover:text-brand-600 rounded-full hover:bg-gray-100"><Bell className="h-5 w-5" /></button>
+                            <button className="p-2 text-gray-500 hover:text-brand-600 rounded-full hover:bg-gray-100"><Bell className="h-5 w-5" /></button>
                             <button className="hidden sm:block p-2 text-gray-500 hover:text-brand-600 rounded-full hover:bg-gray-100"><HelpCircle className="h-5 w-5" /></button>
                             <button onClick={handleSignOut} className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50" title="Salir">
                                 <LogOut className="h-5 w-5" />
