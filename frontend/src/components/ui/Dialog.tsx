@@ -22,7 +22,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
         <div
             ref={ref}
             className={cn(
-                "relative z-50 grid w-full max-w-lg gap-4 rounded-lg bg-white p-6 shadow-lg animate-in fade-in zoom-in-95 duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
+                "relative z-50 grid w-full max-w-lg gap-4 rounded-lg bg-white p-6 shadow-lg animate-in fade-in zoom-in-95 duration-200 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-h-[90vh] overflow-y-auto",
                 className
             )}
             {...props}
