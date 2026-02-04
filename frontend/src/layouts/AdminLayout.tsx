@@ -70,13 +70,14 @@ export default function AdminLayout() {
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* HEADER */}
             <header className="bg-white border-b border-gray-200">
-                <div className="px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-8">
-                        <h1 className="text-xl font-bold tracking-tight text-brand-900">SanIA <span className="text-gray-500 font-normal">| Super Admin Panel</span></h1>
+                <div className="px-4 md:px-6 h-16 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
+                        <h1 className="text-lg md:text-xl font-bold tracking-tight text-brand-900 truncate">
+                            SanIA <span className="text-gray-500 font-normal hidden sm:inline">| Super Admin Panel</span>
+                        </h1>
 
-
-                        {/* KPI STATS (Header Integrated) */}
-                        <div className="flex items-center gap-4 ml-6 text-sm">
+                        {/* KPI STATS (Hidden on mobile) */}
+                        <div className="hidden lg:flex items-center gap-4 ml-6 text-sm">
                             <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-md border border-gray-100">
                                 <span className="text-gray-500 text-xs">Usuarios:</span>
                                 <span className="font-bold text-brand-700">{stats.users}</span>
@@ -96,15 +97,15 @@ export default function AdminLayout() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 md:gap-4 shrink-0">
                         <div className="text-right hidden md:block">
                             <p className="text-sm font-medium text-gray-900">{user?.email || 'Admin Root'}</p>
                             <p className="text-xs text-gray-500">SUPER ADMIN | MedSys</p>
                         </div>
 
-                        <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
-                            <button className="p-2 text-gray-500 hover:text-brand-600 rounded-full hover:bg-gray-100"><Bell className="h-5 w-5" /></button>
-                            <button className="p-2 text-gray-500 hover:text-brand-600 rounded-full hover:bg-gray-100"><HelpCircle className="h-5 w-5" /></button>
+                        <div className="flex items-center gap-1 md:gap-2 border-l border-gray-200 pl-2 md:pl-4">
+                            <button className="hidden sm:block p-2 text-gray-500 hover:text-brand-600 rounded-full hover:bg-gray-100"><Bell className="h-5 w-5" /></button>
+                            <button className="hidden sm:block p-2 text-gray-500 hover:text-brand-600 rounded-full hover:bg-gray-100"><HelpCircle className="h-5 w-5" /></button>
                             <button onClick={handleSignOut} className="p-2 text-gray-500 hover:text-red-600 rounded-full hover:bg-red-50" title="Salir">
                                 <LogOut className="h-5 w-5" />
                             </button>
