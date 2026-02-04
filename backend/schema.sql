@@ -1598,6 +1598,14 @@
   
   CREATE INDEX IF NOT EXISTS idx_practitioners_names ON public.practitioners (last_name_1, first_name);
   CREATE INDEX IF NOT EXISTS idx_practitioners_dni ON public.practitioners (dni);
+
+  -- Fix: Remove strict circular dependency constraint on users table
+  DO $$
+  BEGIN
+      IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_role_integrity') THEN
+          ALTER TABLE public.users DROP CONSTRAINT users_role_integrity;
+      END IF;
+  END $$;
   CREATE INDEX IF NOT EXISTS idx_practitioners_license ON public.practitioners (license_number);
 
   CREATE INDEX IF NOT EXISTS idx_users_email ON public.users (email);
