@@ -184,6 +184,26 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                             </div>
                         </div>
 
+                        {/* Blood Group Hover */}
+                        <div className="group relative">
+                            <div
+                                onClick={() => toggleTooltip('bloodGroup')}
+                                className="p-2 bg-pink-50 text-pink-600 rounded-lg border border-pink-100 hover:bg-pink-100 transition-colors cursor-help"
+                            >
+                                <Droplet className="h-4 w-4" />
+                            </div>
+                            <div className={cn(
+                                "absolute top-full left-[-3.5rem] lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all text-center",
+                                activeTooltip === 'bloodGroup' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
+                            )}>
+                                <span className="block text-[10px] font-black text-pink-600 uppercase mb-2 tracking-widest">Grupo Sanguíneo</span>
+                                <p className="text-xl font-black text-gray-800">
+                                    {patient.blood_group || 'N/A'}
+                                </p>
+                                <div className="absolute -top-1.5 left-16 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                            </div>
+                        </div>
+
                         {/* Alergias Hover */}
                         <div className="group relative">
                             <div
