@@ -2475,6 +2475,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- 5. RLS Policies for consultation_versions
 ALTER TABLE public.consultation_versions ENABLE ROW LEVEL SECURITY;
 
+-- Enable insert for authenticated users (required for triggers)
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.consultation_versions;
+CREATE POLICY "Enable insert for authenticated users"
+ON public.consultation_versions FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
 -- Practitioners can view versions of their consultations
 DROP POLICY IF EXISTS "Practitioners view own consultation versions" ON public.consultation_versions;
 CREATE POLICY "Practitioners view own consultation versions" 
