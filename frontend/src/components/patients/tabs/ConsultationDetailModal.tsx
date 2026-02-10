@@ -169,6 +169,18 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
     const canEdit = validation?.can_edit && !isEditMode;
     const showEditButton = data?.status === 'draft' && currentPractitionerId && !validationLoading;
 
+    console.log('DEBUG EDIT BUTTON V2:', {
+        status: data?.status,
+        currentPractitionerId,
+        validationLoading,
+        firstDiagnosisId,
+        canEdit,
+        validation,
+        showEditButton,
+        diagnosesLength: data?.diagnoses?.length,
+        diagnosesRaw: data?.diagnoses
+    });
+
 
 
     return (
