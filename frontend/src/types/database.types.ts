@@ -305,5 +305,36 @@ export type Database = {
                 }
             }
         }
+        Functions: {
+            can_edit_consultation: {
+                Args: {
+                    p_consultation_diagnosis_id: string
+                    p_practitioner_id: string
+                }
+                Returns: {
+                    can_edit: boolean
+                    reason: string
+                    hours_elapsed: number
+                    hours_remaining: number
+                }
+            }
+            get_consultation_history: {
+                Args: {
+                    p_consultation_diagnosis_id: string
+                }
+                Returns: Array<{
+                    version_number: number
+                    diagnosis_code: string
+                    motivo: string
+                    exploracion: string
+                    aproximacion: string
+                    tratamiento: string
+                    edit_reason: string | null
+                    edited_by_name: string
+                    edited_at: string
+                    is_current: boolean
+                }>
+            }
+        }
     }
 }

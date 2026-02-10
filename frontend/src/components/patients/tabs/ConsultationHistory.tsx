@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, User, FileText, Loader2, AlertCircle } from 'lucide-react';
+import { Calendar, User, FileText, Loader2, AlertCircle, History, Clock } from 'lucide-react';
 import { ConsultationDetailModal } from './ConsultationDetailModal';
+import { ConsultationHistoryModal } from '../modals/ConsultationHistoryModal';
+import { Button } from '@/components/ui/Button';
 
 interface ConsultationHistoryProps {
     patientId: string;
@@ -15,6 +17,8 @@ export function ConsultationHistory({ patientId }: ConsultationHistoryProps) {
     const [error, setError] = useState<string | null>(null);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [historyModalOpen, setHistoryModalOpen] = useState(false);
+    const [selectedDiagnosisId, setSelectedDiagnosisId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchConsultations = async () => {
@@ -32,8 +36,12 @@ export function ConsultationHistory({ patientId }: ConsultationHistoryProps) {
                             last_name_1
                         ),
                         diagnoses:consultation_diagnoses(
+                            id,
                             diagnosis_code,
-                            motivo
+                            motivo,
+                            is_edited,
+                            version_number,
+                            last_edited_at
                         )
                     `)
                     .eq('patient_id', patientId)
@@ -96,6 +104,7 @@ export function ConsultationHistory({ patientId }: ConsultationHistoryProps) {
                             <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Fecha y Hora</th>
                             <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Facultativo</th>
                             <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Diagnóstico Principal</th>
+                            <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Versión</th>
                             <th className="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-right">Estado</th>
                         </tr>
                     </thead>
@@ -160,6 +169,30 @@ export function ConsultationHistory({ patientId }: ConsultationHistoryProps) {
                                             <span className="text-xs italic text-gray-400">Sin diagnóstico</span>
                                         )}
                                     </td>
+                                    <td className="px-4 py-5 text-center" onClick={(e) => e.stopPropagation()}>
+                                        {consultation.diagnoses && consultation.diagnoses.length > 0 && consultation.diagnoses[0].is_edited ? (
+                                            <div className="flex items-center justify-center gap-2">
+                                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded border border-amber-200">
+                                                    <Clock className="h-3 w-3" />
+                                                    v{consultation.diagnoses[0].version_number}
+                                                </span>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-7 w-7 p-0 text-gray-400 hover:text-brand-600 hover:bg-brand-50"
+                                                    onClick={() => {
+                                                        setSelectedDiagnosisId(consultation.diagnoses[0].id);
+                                                        setHistoryModalOpen(true);
+                                                    }}
+                                                    title="Ver historial de versiones"
+                                                >
+                                                    <History className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-gray-300">—</span>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-5 text-right">
                                         <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${consultation.status === 'closed'
                                             ? 'bg-green-50 text-green-600 border border-green-100'
@@ -183,6 +216,12 @@ export function ConsultationHistory({ patientId }: ConsultationHistoryProps) {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 consultationId={selectedId}
+            />
+
+            <ConsultationHistoryModal
+                isOpen={historyModalOpen}
+                onClose={() => setHistoryModalOpen(false)}
+                consultationDiagnosisId={selectedDiagnosisId || ''}
             />
         </div>
     );
