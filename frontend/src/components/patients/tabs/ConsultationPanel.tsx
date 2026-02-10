@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { generateConsultationPDF } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/Dialog';
 import { CheckCircle2, FilePlus } from 'lucide-react';
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import pdfHeaderImg from '@/assets/pdf-header.png';
 
 interface ConsultationPanelProps {
@@ -406,7 +407,8 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
     const inputClass = "w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-brand-500 outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
     return (
-        <div className="h-full flex flex-col animate-in fade-in duration-500 bg-gray-50/50">
+        <div className="h-full flex flex-col animate-in fade-in duration-500 bg-gray-50/50 relative">
+            <LoadingOverlay isLoading={isLoading} message="Generando consulta e informe..." />
             <style>{`
                 input[type=number]::-webkit-inner-spin-button, 
                 input[type=number]::-webkit-outer-spin-button { 

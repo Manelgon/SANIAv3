@@ -4,6 +4,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Loader2, FileText, Edit2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useConsultationEditValidation } from '@/hooks/useConsultationEditValidation';
+import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { ConsultationTimer } from '../ConsultationTimer';
 import { ConsultationHeader } from './ConsultationHeader';
 import { ConsultationVitals } from './ConsultationVitals';
@@ -94,8 +95,6 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
                 .single();
 
             if (consError) throw consError;
-
-
 
             // Force casting to our type, assuming the query matches the interface
             setData(consultation as unknown as ConsultationDetail);
@@ -229,8 +228,9 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
                     </div>
                 </div>
             }
-            className="max-w-5xl w-full md:w-full h-[100dvh] md:h-auto p-4 md:p-6 rounded-none md:rounded-lg"
+            className="max-w-5xl w-full md:w-full h-[100dvh] md:h-auto p-4 md:p-6 rounded-none md:rounded-lg relative overflow-hidden"
         >
+            <LoadingOverlay isLoading={isSaving} message="Guardando cambios..." />
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-20">
                     <Loader2 className="h-10 w-10 animate-spin text-brand-500 mb-4" />
