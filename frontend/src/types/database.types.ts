@@ -304,7 +304,97 @@ export type Database = {
                     created_at?: string
                 }
             }
-        }
+            consultation_diagnoses: {
+                Row: {
+                    id: string
+                    consultation_id: string
+                    diagnosis_id: string | null
+                    motivo: string | null
+                    exploracion: string | null
+                    aproximacion: string | null
+                    tratamiento: string | null
+                    diagnosis_code: string | null
+                    status: 'confirmed' | 'pending' | 'unconfirmed' | 'inactive'
+                    notes: string | null
+                    created_at: string
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    consultation_id: string
+                    diagnosis_id?: string | null
+                    motivo?: string | null
+                    exploracion?: string | null
+                    aproximacion?: string | null
+                    tratamiento?: string | null
+                    diagnosis_code?: string | null
+                    status?: 'confirmed' | 'pending' | 'unconfirmed' | 'inactive'
+                    notes?: string | null
+                    created_at?: string
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    consultation_id?: string
+                    diagnosis_id?: string | null
+                    motivo?: string | null
+                    exploracion?: string | null
+                    aproximacion?: string | null
+                    tratamiento?: string | null
+                    diagnosis_code?: string | null
+                    status?: 'confirmed' | 'pending' | 'unconfirmed' | 'inactive'
+                    notes?: string | null
+                    created_at?: string
+                    updated_at?: string | null
+                }
+            }
+            clinical_constants: {
+                Row: {
+                    id: string
+                    code: string
+                    name: string
+                    unit: string
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    code: string
+                    name: string
+                    unit: string
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    code?: string
+                    name?: string
+                    unit?: string
+                    created_at?: string
+                }
+            }
+            consultation_constants: {
+                Row: {
+                    id: string
+                    consultation_id: string
+                    clinical_constant_id: string
+                    value: number
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    consultation_id: string
+                    clinical_constant_id: string
+                    value: number
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    consultation_id?: string
+                    clinical_constant_id?: string
+                    value?: number
+                    created_at?: string
+                }
+            }
+        },
         Functions: {
             can_edit_consultation: {
                 Args: {

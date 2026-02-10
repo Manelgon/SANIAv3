@@ -9,6 +9,7 @@ export interface ClinicalConstant {
 }
 
 export interface ConsultationConstant {
+    id: string; // Added for updates
     value: number;
     constant: ClinicalConstant;
 }
@@ -18,6 +19,7 @@ export interface Diagnosis {
 }
 
 export interface ConsultationDiagnosis {
+    id: string;
     motivo: string;
     exploracion: string;
     tratamiento: string;

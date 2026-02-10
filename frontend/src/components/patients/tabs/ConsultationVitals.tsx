@@ -3,9 +3,11 @@ import type { ConsultationConstant } from './types';
 
 interface ConsultationVitalsProps {
     constants: ConsultationConstant[];
+    isEditMode?: boolean;
+    onUpdate?: (constants: ConsultationConstant[]) => void;
 }
 
-export function ConsultationVitals({ constants }: ConsultationVitalsProps) {
+export function ConsultationVitals({ constants, isEditMode = false, onUpdate }: ConsultationVitalsProps) {
     const getConstantIcon = (code: string) => {
         switch (code) {
             case 'WEIGHT': return <Scale className="h-4 w-4" />;
@@ -36,10 +38,29 @@ export function ConsultationVitals({ constants }: ConsultationVitalsProps) {
                                 {c.constant?.code?.replace(/_/g, ' ')}
                             </span>
                         </div>
-                        <div className="text-right flex items-baseline gap-1">
-                            <span className="text-sm font-black text-gray-900">{c.value}</span>
-                            <span className="text-[9px] text-gray-400 font-bold uppercase">{c.constant?.unit}</span>
-                        </div>
+                        {isEditMode ? (
+                            <div className="flex items-center gap-1 justify-end">
+                                <input
+                                    type="number"
+                                    value={c.value}
+                                    onChange={(e) => {
+                                        const newValue = parseFloat(e.target.value);
+                                        const updated = constants.map((constItem, i) =>
+                                            i === idx ? { ...constItem, value: isNaN(newValue) ? 0 : newValue } : constItem
+                                        );
+                                        onUpdate?.(updated);
+                                    }}
+                                    className="w-20 text-right p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                                    step="0.01"
+                                />
+                                <span className="text-[9px] text-gray-400 font-bold uppercase">{c.constant?.unit}</span>
+                            </div>
+                        ) : (
+                            <div className="text-right flex items-baseline gap-1">
+                                <span className="text-sm font-black text-gray-900">{c.value}</span>
+                                <span className="text-[9px] text-gray-400 font-bold uppercase">{c.constant?.unit}</span>
+                            </div>
+                        )}
                     </div>
                 )) : (
                     <div className="flex flex-col items-center justify-center py-10 bg-gray-50/30 rounded-xl border border-dashed border-gray-200">

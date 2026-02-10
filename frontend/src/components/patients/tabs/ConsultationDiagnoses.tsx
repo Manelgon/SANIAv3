@@ -3,9 +3,11 @@ import type { ConsultationDiagnosis } from './types';
 
 interface ConsultationDiagnosesProps {
     diagnoses: ConsultationDiagnosis[];
+    isEditMode?: boolean;
+    onUpdate?: (diagnoses: ConsultationDiagnosis[]) => void;
 }
 
-export function ConsultationDiagnoses({ diagnoses }: ConsultationDiagnosesProps) {
+export function ConsultationDiagnoses({ diagnoses, isEditMode = false, onUpdate }: ConsultationDiagnosesProps) {
     // If we have multiple diagnoses, we should probably show notes for each.
     // However, keeping consistent with the original UI, but iterating if there are multiple.
     // Ideally, the UI should separate "Administrative Diagnoses List" and "Clinical Notes Detail".
@@ -73,9 +75,23 @@ export function ConsultationDiagnoses({ diagnoses }: ConsultationDiagnosesProps)
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Exploración / Hallazgos</span>
                         </div>
                         <div className="p-4">
-                            <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap min-h-[80px]">
-                                {diagnosis.exploracion || 'No se registraron notas de exploración.'}
-                            </p>
+                            {isEditMode ? (
+                                <textarea
+                                    value={diagnosis.exploracion || ''}
+                                    onChange={(e) => {
+                                        const updated = diagnoses.map((d, i) =>
+                                            i === idx ? { ...d, exploracion: e.target.value } : d
+                                        );
+                                        onUpdate?.(updated);
+                                    }}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[80px]"
+                                    placeholder="Describa los hallazgos de la exploración física..."
+                                />
+                            ) : (
+                                <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap min-h-[80px]">
+                                    {diagnosis.exploracion || 'No se registraron notas de exploración.'}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -86,9 +102,23 @@ export function ConsultationDiagnoses({ diagnoses }: ConsultationDiagnosesProps)
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Aproximación Diagnóstica</span>
                         </div>
                         <div className="p-4">
-                            <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap min-h-[60px]">
-                                {diagnosis.aproximacion || 'No se registraron notas de aproximación.'}
-                            </p>
+                            {isEditMode ? (
+                                <textarea
+                                    value={diagnosis.aproximacion || ''}
+                                    onChange={(e) => {
+                                        const updated = diagnoses.map((d, i) =>
+                                            i === idx ? { ...d, aproximacion: e.target.value } : d
+                                        );
+                                        onUpdate?.(updated);
+                                    }}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm min-h-[60px]"
+                                    placeholder="Describa la aproximación diagnóstica..."
+                                />
+                            ) : (
+                                <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap min-h-[60px]">
+                                    {diagnosis.aproximacion || 'No se registraron notas de aproximación.'}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -99,9 +129,23 @@ export function ConsultationDiagnoses({ diagnoses }: ConsultationDiagnosesProps)
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Plan de Tratamiento</span>
                         </div>
                         <div className="p-4">
-                            <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap min-h-[80px]">
-                                {diagnosis.tratamiento || 'No se registraron recomendaciones de tratamiento.'}
-                            </p>
+                            {isEditMode ? (
+                                <textarea
+                                    value={diagnosis.tratamiento || ''}
+                                    onChange={(e) => {
+                                        const updated = diagnoses.map((d, i) =>
+                                            i === idx ? { ...d, tratamiento: e.target.value } : d
+                                        );
+                                        onUpdate?.(updated);
+                                    }}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm min-h-[80px]"
+                                    placeholder="Describa el plan de tratamiento..."
+                                />
+                            ) : (
+                                <p className="text-sm text-gray-700 leading-relaxed font-medium whitespace-pre-wrap min-h-[80px]">
+                                    {diagnosis.tratamiento || 'No se registraron recomendaciones de tratamiento.'}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
