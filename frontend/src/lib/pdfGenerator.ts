@@ -215,9 +215,9 @@ export async function generateConsultationPDF(data: PDFData): Promise<{ blob: Bl
 
     if (signatureUrl) {
         try {
-            // Signature image below the text
-            doc.addImage(signatureUrl, 'PNG', 130, y + 5, 45, 20);
-            y += 30;
+            // Signature image below the text (square format)
+            doc.addImage(signatureUrl, 'PNG', 130, y + 5, 30, 30);
+            y += 40;
         } catch (e) {
             console.error('Error adding signature image:', e);
             y += 20;
