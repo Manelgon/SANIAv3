@@ -11,6 +11,8 @@ import { ConsultationVitals } from './ConsultationVitals';
 import { ConsultationDiagnoses } from './ConsultationDiagnoses';
 import type { ConsultationDetail, ConsultationConstant } from './types';
 import { toast } from 'sonner';
+import { generateConsultationPDF } from '@/lib/pdfGenerator';
+import pdfHeaderImg from '@/assets/pdf-header.png';
 
 interface ConsultationDetailModalProps {
     isOpen: boolean;
@@ -73,8 +75,9 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
                     id,
                     status,
                     created_at,
-                    practitioner:practitioners(id, first_name, last_name_1, fid),
-                    patient:patients(id, first_name, last_name_1, last_name_2, cip),
+                    scheduled_at,
+                    practitioner:practitioners(id, first_name, last_name_1, fid, license_number),
+                    patient:patients(id, first_name, last_name_1, last_name_2, cip, dni, birth_date),
                     diagnoses:consultation_diagnoses(
                         id,
                         motivo,
@@ -111,7 +114,7 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
             return;
         }
 
-        if (!data?.diagnoses?.[0]) {
+        if (!data || !data.diagnoses?.[0]) {
             toast.error('No se encontraron datos de diagnóstico');
             return;
         }
@@ -144,6 +147,101 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
                 await Promise.all(constantUpdates);
             }
 
+            // --- GENERATE NEW PDF VERSION ---
+            try {
+                if (!data.practitioner || !data.patient) {
+                    console.warn('Faltan datos de paciente o facultativo para el PDF');
+                } else {
+                    // 1. Fetch Signature
+                    const { data: signatureDoc } = await (supabase
+                        .from('practitioner_documents') as any)
+                        .select('url')
+                        .eq('practitioner_id', data.practitioner.id)
+                        .eq('category', 'signature_stamp')
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .single();
+
+                    // 2. Prepare Data (using the updated state 'data')
+                    // We need to transform constants array to object
+                    const vitalsObj: any = {};
+                    const constantMap: Record<string, string> = {
+                        'WEIGHT': 'weight', 'HEIGHT': 'height', 'BP_SYS': 'systolic',
+                        'BP_DIA': 'diastolic', 'HEART_RATE': 'heartRate', 'TEMP': 'temp', 'SATO2': 'satO2'
+                    };
+
+                    data.constants.forEach(c => {
+                        if (c.constant?.code && constantMap[c.constant.code]) {
+                            vitalsObj[constantMap[c.constant.code]] = c.value;
+                        }
+                    });
+
+                    const pdfPayload = {
+                        patient: {
+                            first_name: data.patient.first_name,
+                            last_name_1: data.patient.last_name_1,
+                            last_name_2: data.patient.last_name_2 || '',
+                            cip: data.patient.cip,
+                            dni: data.patient.dni || '',
+                            birth_date: data.patient.birth_date || ''
+                        },
+                        practitioner: {
+                            first_name: data.practitioner.first_name,
+                            last_name_1: data.practitioner.last_name_1,
+                            license_number: data.practitioner.license_number || ''
+                        },
+                        consultation: {
+                            motivo: data.diagnoses[0].motivo,
+                            exploracion: data.diagnoses[0].exploracion,
+                            tratamiento: data.diagnoses[0].tratamiento,
+                            aproximacion: data.diagnoses[0].aproximacion,
+                            diagnoses: data.diagnoses.map(d => ({
+                                code: d.diagnosis_code,
+                                description: d.diagnosis?.descripcion || 'Sin descripción'
+                            })),
+                            date: data.scheduled_at || data.created_at
+                        },
+                        vitals: vitalsObj,
+                        headerImageUrl: pdfHeaderImg,
+                        signatureUrl: signatureDoc?.url
+                    };
+
+                    const { blob, filename } = await generateConsultationPDF(pdfPayload);
+
+                    // 3. Upload to Storage (with timestamp to avoid collision/caching issues)
+                    const filePath = `${data.patient.id}/${Date.now()}_v_edited_${filename}`;
+                    const { error: uploadError } = await supabase.storage
+                        .from('patient-documents')
+                        .upload(filePath, blob);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('patient-documents')
+                        .getPublicUrl(filePath);
+
+                    // 4. Save Record in DB
+                    await (supabase.from('patient_documents') as any)
+                        .insert({
+                            patient_id: data.patient.id,
+                            name: filename, // Original filename for display
+                            title: `Informe de Consulta (Editado)`,
+                            document_type: 'consultation_report',
+                            url: publicUrl,
+                            type: 'pdf',
+                            category: 'consultation_report',
+                            practitioner_id: data.practitioner.id
+                        });
+
+                    toast.success('Documento PDF actualizado correctamente');
+                }
+
+            } catch (pdfError) {
+                console.error('Error generating PDF:', pdfError);
+                toast.error('Se guardaron los datos pero hubo un error generando el PDF');
+            }
+            // --------------------------------
+
             toast.success('Consulta actualizada correctamente');
             setIsEditMode(false);
             setEditReason('');
@@ -170,10 +268,6 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
 
     const canEdit = validation?.can_edit && !isEditMode;
     const showEditButton = data?.status === 'draft' && currentPractitionerId && !validationLoading;
-
-
-
-
 
     return (
         <Modal

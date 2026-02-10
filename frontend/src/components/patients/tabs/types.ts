@@ -34,6 +34,7 @@ export interface Practitioner {
     first_name: string;
     last_name_1: string;
     fid: string;
+    license_number?: string;
 }
 
 export interface Patient {
@@ -42,12 +43,15 @@ export interface Patient {
     last_name_1: string;
     last_name_2: string | null;
     cip: string;
+    dni?: string;
+    birth_date?: string;
 }
 
 export interface ConsultationDetail {
     id: string;
     status: ConsultationStatus;
     created_at: string;
+    scheduled_at?: string;
     practitioner: Practitioner | null;
     patient: Patient | null;
     diagnoses: ConsultationDiagnosis[];
