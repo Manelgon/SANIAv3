@@ -75,6 +75,7 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
                     practitioner:practitioners(id, first_name, last_name_1, fid),
                     patient:patients(id, first_name, last_name_1, last_name_2, cip),
                     diagnoses:consultation_diagnoses(
+                        id,
                         motivo,
                         exploracion,
                         tratamiento,
@@ -168,15 +169,7 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
     const canEdit = validation?.can_edit && !isEditMode;
     const showEditButton = data?.status === 'draft' && currentPractitionerId && !validationLoading;
 
-    console.log('DEBUG EDIT BUTTON:', {
-        status: data?.status,
-        currentPractitionerId,
-        validationLoading,
-        firstDiagnosisId,
-        canEdit,
-        validation,
-        showEditButton
-    });
+
 
     return (
         <Modal
