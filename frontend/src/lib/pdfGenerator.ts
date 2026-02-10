@@ -66,10 +66,10 @@ export async function generateConsultationPDF(data: PDFData): Promise<{ blob: Bl
         doc.text("SANIA - INFORME CLÍNICO", 105, 20, { align: 'center' });
     }
 
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setTextColor(113, 128, 150);
     doc.setFont("helvetica", "normal");
-    doc.text("Documento generado automáticamente por el sistema de gestión clínica", 105, 48, { align: 'center' });
+    doc.text("Documento generado automáticamente", 105, 48, { align: 'center' });
 
     // --- HORIZONTAL SEPARATOR ---
     doc.setDrawColor(226, 232, 240);
@@ -198,10 +198,16 @@ export async function generateConsultationPDF(data: PDFData): Promise<{ blob: Bl
 
     addClinicalBlock("IMPRESIÓN CLÍNICA / PLAN / TRATAMIENTO", `${consultation.aproximacion}\n\n${consultation.tratamiento}`);
 
-    // --- SIGNATURE AREA ---
-    if (y > 230) { doc.addPage(); y = 20; }
-    y += 10;
+    // --- SIGNATURE AREA (AT THE END) ---
+    // Check if we need a new page for signature
+    if (y > 220) {
+        doc.addPage();
+        y = 20;
+    } else {
+        y += 15;
+    }
 
+    // Signature section
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(45, 55, 72);
@@ -220,14 +226,22 @@ export async function generateConsultationPDF(data: PDFData): Promise<{ blob: Bl
         y += 25;
     }
 
+    // Signature line
     doc.setDrawColor(200);
     doc.line(130, y, 185, y);
     y += 5;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+
+    // Practitioner details below signature
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(45, 55, 72);
     doc.text(`${practitioner.first_name} ${practitioner.last_name_1}`, 130, y);
+    y += 4;
+
     if (practitioner.license_number) {
-        y += 4;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
         doc.text(`Col. Nº: ${practitioner.license_number}`, 130, y);
     }
 
