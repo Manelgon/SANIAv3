@@ -2501,3 +2501,51 @@ ON public.consultation_versions(consultation_diagnosis_id);
 
 CREATE INDEX IF NOT EXISTS idx_consultation_versions_consultation_id 
 ON public.consultation_versions(consultation_id);
+
+-- =====================================================
+-- AUTO-CLOSE EXPIRED DRAFT CONSULTATIONS
+-- =====================================================
+-- Automatically transition consultations from 'draft' to 'closed'
+-- after 24 hours have elapsed since creation
+-- =====================================================
+
+-- Function to auto-close expired draft consultations
+CREATE OR REPLACE FUNCTION public.auto_close_expired_draft_consultations()
+RETURNS void AS $$
+BEGIN
+    UPDATE public.consultations
+    SET status = 'closed'::consultation_status
+    WHERE status = 'draft'::consultation_status
+      AND EXTRACT(EPOCH FROM (NOW() - created_at)) / 3600 > 24;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION public.auto_close_expired_draft_consultations() TO authenticated;
+
+-- Trigger function to auto-close on consultation access
+CREATE OR REPLACE FUNCTION public.trigger_auto_close_draft_on_access()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If this is a draft consultation and more than 24 hours have passed, close it
+    IF NEW.status = 'draft'::consultation_status AND 
+       EXTRACT(EPOCH FROM (NOW() - NEW.created_at)) / 3600 > 24 THEN
+        NEW.status := 'closed'::consultation_status;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger on consultations table (fires on SELECT via materialized view or on UPDATE)
+-- Note: PostgreSQL doesn't support BEFORE SELECT triggers directly, so we use BEFORE UPDATE
+DROP TRIGGER IF EXISTS trigger_auto_close_expired_drafts ON public.consultations;
+CREATE TRIGGER trigger_auto_close_expired_drafts
+    BEFORE UPDATE ON public.consultations
+    FOR EACH ROW
+    EXECUTE FUNCTION public.trigger_auto_close_draft_on_access();
+
+-- Create index for efficient draft consultation queries
+CREATE INDEX IF NOT EXISTS idx_consultations_draft_status_created 
+ON public.consultations(status, created_at) 
+WHERE status = 'draft';
+

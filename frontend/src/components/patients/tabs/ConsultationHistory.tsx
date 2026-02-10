@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale';
 import { Calendar, User, FileText, Loader2, AlertCircle, History, Clock } from 'lucide-react';
 import { ConsultationDetailModal } from './ConsultationDetailModal';
 import { ConsultationHistoryModal } from '../modals/ConsultationHistoryModal';
+import { ConsultationTimer } from '../ConsultationTimer';
 import { Button } from '@/components/ui/Button';
 
 interface ConsultationHistoryProps {
@@ -19,11 +20,25 @@ export function ConsultationHistory({ patientId }: ConsultationHistoryProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [historyModalOpen, setHistoryModalOpen] = useState(false);
     const [selectedDiagnosisId, setSelectedDiagnosisId] = useState<string | null>(null);
+    const [currentPractitionerId, setCurrentPractitionerId] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchConsultations = async () => {
             setIsLoading(true);
             try {
+                // Get current practitioner ID
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: practitioner } = await supabase
+                        .from('practitioners')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .single();
+                    if (practitioner) {
+                        setCurrentPractitionerId((practitioner as { id: string }).id);
+                    }
+                }
+
                 const { data, error: fetchError } = await supabase
                     .from('consultations')
                     .select(`
@@ -194,12 +209,30 @@ export function ConsultationHistory({ patientId }: ConsultationHistoryProps) {
                                         )}
                                     </td>
                                     <td className="px-4 py-5 text-right">
-                                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${consultation.status === 'closed'
-                                            ? 'bg-green-50 text-green-600 border border-green-100'
-                                            : 'bg-orange-50 text-orange-600 border border-orange-100'
-                                            }`}>
-                                            {consultation.status === 'closed' ? 'Cerrada' : 'Borrador'}
-                                        </span>
+                                        <div className="flex items-center justify-end gap-2">
+                                            {consultation.status === 'draft' && consultation.diagnoses && consultation.diagnoses.length > 0 && currentPractitionerId && (
+                                                <ConsultationTimer
+                                                    consultationDiagnosisId={consultation.diagnoses[0].id}
+                                                    practitionerId={currentPractitionerId}
+                                                    onExpired={() => {
+                                                        // Update local state when timer expires
+                                                        setConsultations(prev =>
+                                                            prev.map(c =>
+                                                                c.id === consultation.id
+                                                                    ? { ...c, status: 'closed' }
+                                                                    : c
+                                                            )
+                                                        );
+                                                    }}
+                                                />
+                                            )}
+                                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${consultation.status === 'closed'
+                                                ? 'bg-green-50 text-green-600 border border-green-100'
+                                                : 'bg-orange-50 text-orange-600 border border-orange-100'
+                                                }`}>
+                                                {consultation.status === 'closed' ? 'Cerrada' : 'Borrador'}
+                                            </span>
+                                        </div>
                                     </td>
                                 </tr>
                             );
