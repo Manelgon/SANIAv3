@@ -3,7 +3,8 @@ import { ConsultationPanel } from './tabs/ConsultationPanel';
 import { ConsultationHistory } from './tabs/ConsultationHistory';
 import { DiagnosesTab } from './tabs/DiagnosesTab';
 import { DocumentsTab } from './tabs/DocumentsTab';
-import { ArrowLeft, User, ClipboardList, Info, Calendar, Phone, Activity, Venus, Mars, AlertTriangle, Zap, Apple, History as HistoryIcon, FileText, Droplet } from 'lucide-react';
+import { ClinicalDataTab } from './tabs/ClinicalDataTab';
+import { ArrowLeft, User, ClipboardList, Info, Calendar, Phone, Activity, Venus, Mars, AlertTriangle, Zap, Apple, History as HistoryIcon, FileText, Droplet, HeartPulse } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -67,6 +68,7 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
     const tabs = [
         { id: 'consulta', label: 'Consulta', icon: Activity },
         { id: 'historial', label: 'Historial de Consultas', icon: Calendar },
+        { id: 'clinicos', label: 'Datos Clínicos', icon: HeartPulse },
         { id: 'diagnosticos', label: 'Diagnósticos', icon: ClipboardList },
         { id: 'documentos', label: 'Documentos', icon: FileText },
         { id: 'informacion', label: 'Información General', icon: Info },
@@ -302,6 +304,11 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                         <ConsultationHistory patientId={patient.id} />
                     </div>
 
+                    {/* TAB: Datos Clínicos */}
+                    <div className={cn("flex-1 overflow-auto", activeTab !== 'clinicos' && "hidden")}>
+                        <ClinicalDataTab patientId={patient.id} />
+                    </div>
+
                     {/* TAB: Diagnósticos */}
                     <div className={cn("flex-1 overflow-hidden", activeTab !== 'diagnosticos' && "hidden")}>
                         <DiagnosesTab patientId={patient.id} />
@@ -320,40 +327,39 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                 <div className="col-span-12 lg:col-span-8 space-y-6">
                                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                         <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
-                                            <Info className="h-4 w-4 text-gray-400" />
-                                            <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Información de Identificación</h4>
+                                            <Phone className="h-4 w-4 text-gray-400" />
+                                            <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Ubicación y Contacto</h4>
                                         </div>
-                                        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-8">
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nombre Completo</span>
-                                                <span className="text-sm font-bold text-gray-900 leading-tight">
-                                                    {patient.first_name} {patient.last_name_1} {patient.last_name_2}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">DNI / Pasaporte</span>
-                                                <span className="text-sm font-bold text-gray-900 leading-tight">{patient.dni}</span>
-                                            </div>
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nº Afiliación / CIP</span>
-                                                <span className="text-sm font-black text-brand-600 leading-tight">{patient.insured_number || patient.cip || 'N/A'}</span>
-                                            </div>
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Fecha de Nacimiento</span>
-                                                <span className="text-sm font-bold text-gray-900 leading-tight">
-                                                    {format(new Date(patient.birth_date), "dd 'de' MMMM, yyyy", { locale: es })}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Género</span>
-                                                <span className="text-sm font-bold text-gray-900 leading-tight capitalize">{patient.gender || 'No especificado'}</span>
-                                            </div>
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Email / Usuario</span>
-                                                <span className="text-sm font-bold text-gray-900 leading-tight">{patient.email || 'N/A'}</span>
+                                        <div className="p-5">
+                                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                    <span className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Teléfono Principal</span>
+                                                    <span className="text-sm font-bold text-gray-900">{patient.phone || '---'}</span>
+                                                </div>
+                                                <div className="p-3 bg-red-50 rounded-lg border border-red-100">
+                                                    <span className="text-[9px] text-red-500 uppercase font-bold block mb-1">Emergencias</span>
+                                                    <span className="text-sm font-bold text-red-900">{patient.emergency_phone || '---'}</span>
+                                                </div>
+                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                    <span className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Dirección</span>
+                                                    <span className="text-sm font-semibold text-gray-900 leading-tight block truncate" title={patient.address?.street}>
+                                                        {patient.address?.street || 'No especificada'}
+                                                    </span>
+                                                </div>
+                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                    <span className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Localidad</span>
+                                                    <span className="text-sm font-bold text-gray-900 block truncate capitalize" title={patient.locality || patient.address?.locality}>
+                                                        {patient.locality || patient.address?.locality || '---'}
+                                                    </span>
+                                                </div>
+                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                    <span className="text-[9px] text-gray-400 font-bold uppercase block mb-1">Provincia / Región</span>
+                                                    <span className="text-sm font-bold text-gray-900 block truncate capitalize">{patient.address?.province || 'No especificada'}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+
 
                                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                         <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
@@ -379,34 +385,6 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* RIGHT: Location & Notes */}
-                                <div className="col-span-12 lg:col-span-4 space-y-6">
-                                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                                        <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
-                                            <Phone className="h-4 w-4 text-gray-400" />
-                                            <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Ubicación y Contacto</h4>
-                                        </div>
-                                        <div className="p-5 space-y-4">
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Dirección de Residencia</span>
-                                                <span className="text-sm font-semibold text-gray-900 leading-relaxed block p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                                    {patient.address?.street || 'Calle no especificada'}
-                                                    {(patient.address?.block || patient.address?.floor) && (
-                                                        <span className="block text-xs text-gray-500 mt-1 font-medium italic">
-                                                            {patient.address?.block && `Bloque ${patient.address.block}`}
-                                                            {patient.address?.floor && `${patient.address?.block ? ', ' : ''}Piso ${patient.address.floor}`}
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Provincia / Región</span>
-                                                <span className="text-sm font-bold text-gray-900 leading-none capitalize">{patient.address?.province || 'No especificada'}</span>
-                                            </div>
-                                        </div>
-                                    </div>
 
                                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                                         <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
@@ -414,6 +392,25 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                             <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Notas Administrativas</h4>
                                         </div>
                                         <div className="p-5 space-y-4">
+                                            {/* Allergies Section */}
+                                            <div className="space-y-1">
+                                                <span className="block text-[10px] text-red-500 font-black uppercase">Alergias Conocidas</span>
+                                                {allergies.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-2 bg-red-50/50 p-3 rounded-lg border border-red-100">
+                                                        {allergies.map((a: any) => (
+                                                            <div key={a.id} className="inline-flex items-center gap-1.5 bg-white border border-red-200 text-red-700 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm">
+                                                                <AlertTriangle className="h-3 w-3" />
+                                                                <span>{(a.allergy as any)?.description}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-gray-500 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100 italic">
+                                                        No se han registrado alergias.
+                                                    </p>
+                                                )}
+                                            </div>
+
                                             <div className="space-y-1">
                                                 <span className="block text-[10px] text-blue-500 font-black uppercase">Antecedentes</span>
                                                 <p className="text-xs text-blue-900 leading-relaxed bg-blue-50/50 p-3 rounded-lg border border-blue-100 italic">
@@ -428,6 +425,61 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* RIGHT: Location & Notes */}
+                                <div className="col-span-12 lg:col-span-4 space-y-6">
+                                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                                        <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
+                                            <Info className="h-4 w-4 text-gray-400" />
+                                            <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Información de Identificación</h4>
+                                        </div>
+                                        <div className="p-5 space-y-4">
+                                            <div>
+                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nombre Completo</span>
+                                                <span className="text-xs font-bold text-gray-900 block leading-tight">
+                                                    {patient.first_name} {patient.last_name_1} {patient.last_name_2}
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">DNI / Pasaporte</span>
+                                                    <span className="text-xs font-bold text-gray-900 block">{patient.dni}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">CIP</span>
+                                                    <span className="text-xs font-black text-brand-600 block">{patient.cip || 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">FID Relacionado</span>
+                                                    <span className="text-xs font-bold text-brand-600 block">{patient.portfolio_name || 'Particular'}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nº Afiliación</span>
+                                                    <span className="text-xs font-bold text-gray-900 block">{patient.insured_number || 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nacimiento</span>
+                                                    <span className="text-[11px] font-bold text-gray-900 block">
+                                                        {format(new Date(patient.birth_date), "dd/MM/yyyy")}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Género</span>
+                                                    <span className="text-xs font-bold text-gray-900 block capitalize">{patient.gender || '---'}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Email</span>
+                                                <span className="text-xs font-bold text-gray-900 block truncate" title={patient.email}>{patient.email || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>

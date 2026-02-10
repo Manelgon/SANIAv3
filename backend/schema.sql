@@ -46,6 +46,8 @@
     dni TEXT UNIQUE NOT NULL,
     birth_date DATE NOT NULL, -- Required for FID generation
     address JSONB NOT NULL,
+    phone TEXT NOT NULL, -- Mandatory
+    emergency_phone TEXT, -- Optional
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT fk_user UNIQUE (user_id)
@@ -86,6 +88,8 @@
     weight NUMERIC, -- Weight in kg
     background TEXT, -- Medical background
     habits TEXT, -- Lifestyle habits
+    phone TEXT NOT NULL, -- Mandatory (User Request)
+    emergency_phone TEXT, -- Optional
     gender TEXT NOT NULL, -- Mandatory (hombre/mujer/otro)
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -134,6 +138,7 @@
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     code TEXT UNIQUE NOT NULL,
     description TEXT NOT NULL,
+    parent_id UUID REFERENCES public.allergies_list(id) ON DELETE CASCADE, -- Hierarchy
     created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
@@ -162,6 +167,69 @@
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
   );
+
+  -- 4b. HABITS
+  CREATE TABLE IF NOT EXISTS public.habits_list (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT, -- e.g., 'Diet', 'Exercise', 'Substance'
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS public.patient_habits (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    patient_id UUID REFERENCES public.patients(id) ON DELETE CASCADE NOT NULL,
+    habit_id UUID REFERENCES public.habits_list(id) ON DELETE RESTRICT,
+    practitioner_id UUID REFERENCES public.practitioners(id) ON DELETE SET NULL,
+    cip TEXT,
+    -- 1: Activo, 2: Ex-hábito, 3: Ocasional
+    status INTEGER CHECK (status IN (1, 2, 3)) DEFAULT 1,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  -- RLS FOR HABITS
+  ALTER TABLE public.habits_list ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.patient_habits ENABLE ROW LEVEL SECURITY;
+
+  DROP POLICY IF EXISTS "Enable read access for authenticated users" ON public.habits_list;
+  CREATE POLICY "Enable read access for authenticated users" ON public.habits_list
+      FOR SELECT TO authenticated USING (true);
+  
+
+  
+  DROP POLICY IF EXISTS "Enable read access for own habits" ON public.patient_habits;
+  CREATE POLICY "Enable read access for own habits" ON public.patient_habits
+      FOR SELECT TO authenticated
+      USING (
+          auth.uid() IN (SELECT user_id FROM public.patients WHERE id = patient_id) OR
+          auth.uid() IN (SELECT user_id FROM public.practitioners WHERE id = practitioner_id) OR
+          auth.uid() IN (SELECT user_id FROM public.practitioners WHERE id = (SELECT practitioner_id FROM public.patients WHERE id = patient_habits.patient_id)) OR 
+          EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('super_admin', 'assistant', 'billing'))
+      );
+
+  DROP POLICY IF EXISTS "Enable insert for practitioners and admins" ON public.patient_habits;
+  CREATE POLICY "Enable insert for practitioners and admins" ON public.patient_habits
+      FOR INSERT TO authenticated
+      WITH CHECK (
+          EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('practitioner', 'super_admin'))
+      );
+      
+  DROP POLICY IF EXISTS "Enable update for practitioners and admins" ON public.patient_habits;
+  CREATE POLICY "Enable update for practitioners and admins" ON public.patient_habits
+      FOR UPDATE TO authenticated
+      USING (
+          EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('practitioner', 'super_admin'))
+      );
+
+  DROP POLICY IF EXISTS "Enable delete for practitioners and admins" ON public.patient_habits;
+  CREATE POLICY "Enable delete for practitioners and admins" ON public.patient_habits
+      FOR DELETE TO authenticated
+      USING (
+          EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('practitioner', 'super_admin'))
+      );
 
   -- CONSTANTS (Vitals) Catalog
   CREATE TABLE IF NOT EXISTS public.clinical_constants (
@@ -219,8 +287,17 @@
   -- Trigger to sync practitioner data (FID) to documents
   CREATE OR REPLACE FUNCTION public.sync_practitioner_data_to_documents()
   RETURNS TRIGGER AS $$
+  DECLARE
+      practitioner_fid TEXT;
   BEGIN
-      SELECT fid INTO NEW.fid FROM public.practitioners WHERE id = NEW.practitioner_id;
+      -- Get the practitioner's fid
+      SELECT fid INTO practitioner_fid FROM public.practitioners WHERE id = NEW.practitioner_id;
+      
+      -- Only set fid if the column exists and has a value
+      IF practitioner_fid IS NOT NULL THEN
+          NEW.fid := practitioner_fid;
+      END IF;
+      
       RETURN NEW;
   END;
   $$ LANGUAGE plpgsql;
@@ -232,13 +309,24 @@
 
   CREATE OR REPLACE FUNCTION public.create_enum_patient_document_category() RETURNS void AS $$
   BEGIN
-      CREATE TYPE patient_document_category AS ENUM ('administrative_generated', 'administrative_uploaded', 'medical_test');
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'patient_document_category') THEN
+          CREATE TYPE patient_document_category AS ENUM ('medical_test', 'administrative_uploaded', 'administrative_generated', 'consultation_report', 'patient_provided', 'other');
+      END IF;
   EXCEPTION
       WHEN duplicate_object THEN null;
   END;
   $$ LANGUAGE plpgsql;
   SELECT public.create_enum_patient_document_category();
   DROP FUNCTION public.create_enum_patient_document_category();
+
+  -- Safe migration to add new categories if enum already exists
+  DO $migration$
+  BEGIN
+      ALTER TYPE patient_document_category ADD VALUE IF NOT EXISTS 'consultation_report';
+      ALTER TYPE patient_document_category ADD VALUE IF NOT EXISTS 'patient_provided';
+  EXCEPTION
+      WHEN others THEN null;
+  END $migration$;
 
   CREATE TABLE IF NOT EXISTS public.patient_documents (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -253,11 +341,30 @@
     created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
-  -- Trigger to sync patient data to documents
+  -- Trigger to sync patient data (FID, CIP) to documents
+  CREATE OR REPLACE FUNCTION public.sync_patient_data_to_documents()
+  RETURNS TRIGGER AS $$
+  DECLARE
+      p_fid TEXT;
+      p_cip TEXT;
+  BEGIN
+      -- Pull CIP from patient
+      SELECT cip INTO p_cip FROM public.patients WHERE id = NEW.patient_id;
+      -- Pull FID from practitioner (if linked)
+      IF NEW.practitioner_id IS NOT NULL THEN
+          SELECT fid INTO p_fid FROM public.practitioners WHERE id = NEW.practitioner_id;
+      END IF;
+
+      IF p_fid IS NOT NULL THEN NEW.fid := p_fid; END IF;
+      IF p_cip IS NOT NULL THEN NEW.cip := p_cip; END IF;
+      RETURN NEW;
+  END;
+  $$ LANGUAGE plpgsql;
+
   DROP TRIGGER IF EXISTS trigger_sync_patient_data_to_documents ON public.patient_documents;
   CREATE TRIGGER trigger_sync_patient_data_to_documents
       BEFORE INSERT ON public.patient_documents
-      FOR EACH ROW EXECUTE FUNCTION public.sync_patient_data_to_clinical_record();
+      FOR EACH ROW EXECUTE FUNCTION public.sync_patient_data_to_documents();
 
   -- 5. AUDIT & SECURITY
   CREATE TABLE IF NOT EXISTS public.audit_events (
@@ -271,6 +378,15 @@
   -- RLS Enable
   ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
   ALTER TABLE public.practitioners ENABLE ROW LEVEL SECURITY;
+
+  -- Users Policy
+  DROP POLICY IF EXISTS "Public profiles are viewable by authenticated users" ON public.users;
+  CREATE POLICY "Public profiles are viewable by authenticated users" ON public.users FOR SELECT TO authenticated USING (true);
+
+  -- Practitioners Policy
+  DROP POLICY IF EXISTS "Practitioners are viewable by authenticated users" ON public.practitioners;
+  CREATE POLICY "Practitioners are viewable by authenticated users" ON public.practitioners FOR SELECT TO authenticated USING (true);
+
   ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
   ALTER TABLE public.portfolios ENABLE ROW LEVEL SECURITY;
   ALTER TABLE public.consultations ENABLE ROW LEVEL SECURITY;
@@ -428,6 +544,11 @@
           ALTER TABLE public.practitioners ALTER COLUMN last_name_2 SET NOT NULL;
       EXCEPTION WHEN others THEN null;
       END;
+
+      -- Add locality to patients
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='patients' AND column_name='locality') THEN
+          ALTER TABLE public.patients ADD COLUMN locality TEXT;
+      END IF;
   END;
   $$ LANGUAGE plpgsql;
   SELECT public.migrate_practitioners_columns();
@@ -569,7 +690,7 @@
   DROP FUNCTION public.migrate_users_role_constraints();
 
   -- RPC: Get Admin Users List (joins public.users with auth.users and profiles)
-  DROP FUNCTION IF EXISTS public.get_admin_users();
+  DROP FUNCTION IF EXISTS public.get_admin_users(text, integer, integer);
   CREATE OR REPLACE FUNCTION public.get_admin_users(
     p_search TEXT DEFAULT NULL,
     p_limit INTEGER DEFAULT 20,
@@ -583,6 +704,7 @@
     full_name TEXT,
     fid TEXT,
     cip TEXT,
+    phone TEXT,
     practitioner_id UUID,
     patient_id UUID,
     portfolio_id UUID,
@@ -604,7 +726,9 @@
           pat.first_name || ' ' || pat.last_name_1 || ' ' || COALESCE(pat.last_name_2, ''),
           'N/A'
         ) as full_name,
-        u.fid, u.cip, u.practitioner_id, u.patient_id, u.portfolio_id,
+        u.fid, u.cip, 
+        COALESCE(p.phone, pat.phone) as phone,
+        u.practitioner_id, u.patient_id, u.portfolio_id,
         port.name as portfolio_name, u.insured_number, u.updated_at,
         au.last_sign_in_at, u.created_at,
         (au.email_confirmed_at IS NOT NULL) as is_confirmed
@@ -1063,6 +1187,7 @@
     BEGIN
       SELECT jsonb_build_object(
         'users', (SELECT count(*) FROM public.users),
+        'practitioners', (SELECT count(*) FROM public.practitioners),
         'patients', (SELECT count(*) FROM public.patients),
         'portfolios', (SELECT count(*) FROM public.portfolios),
         'alerts', (SELECT count(*) FROM public.users WHERE active = false)
@@ -1322,6 +1447,73 @@
     END;
     $body$ LANGUAGE plpgsql SECURITY DEFINER;
 
+    -- RPC: Get Practitioners List for Admin
+    DROP FUNCTION IF EXISTS public.get_practitioners_list(text, integer, integer);
+    CREATE OR REPLACE FUNCTION public.get_practitioners_list(
+        p_search TEXT DEFAULT NULL,
+        p_limit INTEGER DEFAULT 20,
+        p_offset INTEGER DEFAULT 0
+    )
+    RETURNS TABLE (
+        id UUID,
+        user_id UUID,
+        email TEXT,
+        first_name TEXT,
+        last_name_1 TEXT,
+        last_name_2 TEXT,
+        license_number TEXT,
+        specialty TEXT,
+        phone TEXT,
+        emergency_phone TEXT,
+        bio TEXT,
+        address JSONB,
+        active BOOLEAN,
+        created_at TIMESTAMPTZ,
+        last_sign_in_at TIMESTAMPTZ,
+        total_count BIGINT
+    ) AS $body$
+    BEGIN
+        RETURN QUERY
+        WITH filtered_practitioners AS (
+            SELECT 
+                p.id, p.user_id, au.email, 
+                p.first_name, p.last_name_1, p.last_name_2, 
+                p.license_number, p.specialty, p.phone, p.emergency_phone,
+                p.bio, p.address, u.active, p.created_at, au.last_sign_in_at
+            FROM public.practitioners p
+            JOIN public.users u ON p.user_id = u.id
+            LEFT JOIN auth.users au ON u.id = au.id
+            WHERE (p_search IS NULL OR 
+                   p.first_name ILIKE '%' || p_search || '%' OR
+                   p.last_name_1 ILIKE '%' || p_search || '%' OR
+                   p.last_name_2 ILIKE '%' || p_search || '%' OR
+                   p.license_number ILIKE '%' || p_search || '%' OR
+                   p.specialty ILIKE '%' || p_search || '%' OR
+                   au.email ILIKE '%' || p_search || '%')
+        )
+        SELECT 
+            fp.id, 
+            fp.user_id, 
+            fp.email::TEXT, 
+            fp.first_name::TEXT, 
+            fp.last_name_1::TEXT, 
+            fp.last_name_2::TEXT,
+            fp.license_number::TEXT, 
+            fp.specialty::TEXT, 
+            fp.phone::TEXT, 
+            fp.emergency_phone::TEXT, 
+            fp.bio::TEXT,
+            fp.address, 
+            fp.active, 
+            fp.created_at, 
+            fp.last_sign_in_at,
+            (SELECT COUNT(*) FROM filtered_practitioners)::BIGINT as total_count
+        FROM filtered_practitioners fp
+        ORDER BY fp.created_at DESC
+        LIMIT p_limit OFFSET p_offset;
+    END;
+    $body$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth;
+
 
     -- Rename evolutivo to exploracion if it exists (Fix for existing DBs)
     DO $$
@@ -1348,7 +1540,211 @@
             name = EXCLUDED.name,
             unit = EXCLUDED.unit;
 
-        -- Seed minimal diagnosis catalog (CIE-10)
+        -- Safe migration: Add parent_id to allergies_list if missing
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='allergies_list' AND column_name='parent_id') THEN
+            ALTER TABLE public.allergies_list ADD COLUMN parent_id UUID REFERENCES public.allergies_list(id) ON DELETE CASCADE;
+        END IF;
+
+        -- Safe migration: Add status to patient_allergies if missing
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='patient_allergies' AND column_name='status') THEN
+            ALTER TABLE public.patient_allergies ADD COLUMN status INTEGER DEFAULT 2; -- Default to Confirmed
+        END IF;
+
+        -- Safe migration: Add status to patient_habits if missing
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='patient_habits' AND column_name='status') THEN
+            ALTER TABLE public.patient_habits ADD COLUMN status INTEGER DEFAULT 1; -- Default to Active
+        END IF;
+
+        -- 1) CATEGORÍAS PRINCIPALES (upsert por code)
+        WITH upsert_parents AS (
+        INSERT INTO public.allergies_list (id, code, description, created_at, parent_id)
+        VALUES
+            (uuid_generate_v4(), 'CAT01', 'Medicamentos', now(), NULL),
+            (uuid_generate_v4(), 'CAT02', 'Ambientales', now(), NULL),
+            (uuid_generate_v4(), 'CAT03', 'Alimentos', now(), NULL),
+            (uuid_generate_v4(), 'CAT04', 'Insectos', now(), NULL),
+            (uuid_generate_v4(), 'CAT05', 'Materiales', now(), NULL)
+        ON CONFLICT (code) DO UPDATE
+            SET description = EXCLUDED.description
+        RETURNING id, code
+        ),
+        parents AS (
+        SELECT id, code FROM upsert_parents
+        ),
+
+        -- 2) SUBCATEGORÍAS (nivel 1 bajo cada CATxx)
+        upsert_level1 AS (
+        INSERT INTO public.allergies_list (id, code, description, created_at, parent_id)
+        SELECT uuid_generate_v4(), v.code, v.description, now(), p.id
+        FROM parents p
+        JOIN (VALUES
+            ('CAT01','MED-PEN',  'Penicilinas'),
+            ('CAT01','MED-CEF',  'Cefalosporinas'),
+            ('CAT01','MED-SUL',  'Sulfonamidas'),
+            ('CAT01','MED-AINE', 'AINEs (ibuprofeno/naproxeno/aspirina)'),
+            ('CAT01','MED-MET',  'Metamizol (dipirona)'),
+            ('CAT01','MED-ANL',  'Anestésicos locales'),
+            ('CAT01','MED-OPI',  'Opioides'),
+            ('CAT01','MED-ACM',  'Anticonvulsivantes'),
+            ('CAT01','MED-MAC',  'Macrólidos'),
+            ('CAT01','MED-QUI',  'Quinolonas'),
+            ('CAT01','MED-IO',   'Contraste yodado'),
+            ('CAT01','MED-CLX',  'Clorhexidina'),
+            ('CAT01','MED-OTR',  'Otros medicamentos'),
+            ('CAT02','AMB-POL',  'Pólenes'),
+            ('CAT02','AMB-ACA',  'Ácaros del polvo'),
+            ('CAT02','AMB-MOH',  'Mohos'),
+            ('CAT02','AMB-ANI',  'Epitelios de animales'),
+            ('CAT02','AMB-CUC',  'Cucaracha'),
+            ('CAT03','ALI-GLU',  'Cereales con gluten'),
+            ('CAT03','ALI-LAC',  'Leche / proteínas de leche'),
+            ('CAT03','ALI-LACi', 'Lactosa (intolerancia)'),
+            ('CAT03','ALI-HUE',  'Huevo'),
+            ('CAT03','ALI-PES',  'Pescado'),
+            ('CAT03','ALI-CRU',  'Crustáceos'),
+            ('CAT03','ALI-MOL',  'Moluscos'),
+            ('CAT03','ALI-CAC',  'Cacahuete'),
+            ('CAT03','ALI-FRU',  'Frutos secos'),
+            ('CAT03','ALI-SOJ',  'Soja'),
+            ('CAT03','ALI-SES',  'Sésamo'),
+            ('CAT03','ALI-MOS',  'Mostaza'),
+            ('CAT03','ALI-API',  'Apio'),
+            ('CAT03','ALI-SULF', 'Sulfitos'),
+            ('CAT03','ALI-ALTR', 'Altramuz'),
+            ('CAT03','ALI-FRU2', 'Fruta (síndrome látex-fruta / ROS)'),
+            ('CAT03','ALI-OTR',  'Otros alimentos'),
+            ('CAT04','INS-ABE',  'Abeja'),
+            ('CAT04','INS-AVI',  'Avispa'),
+            ('CAT04','INS-HOR',  'Hormiga'),
+            ('CAT04','INS-MOS',  'Mosquito (reacción local)'),
+            ('CAT04','INS-OTR',  'Otros insectos'),
+            ('CAT05','MAT-LAT',  'Látex'),
+            ('CAT05','MAT-NIQ',  'Níquel'),
+            ('CAT05','MAT-COB',  'Cobalto'),
+            ('CAT05','MAT-CRO',  'Cromo'),
+            ('CAT05','MAT-ADH',  'Adhesivos (acrilatos)'),
+            ('CAT05','MAT-FRA',  'Fragancias / perfumes'),
+            ('CAT05','MAT-PAR',  'Conservantes (parabenos/isotiazolinonas)'),
+            ('CAT05','MAT-TIN',  'Tintes (PPD, etc.)'),
+            ('CAT05','MAT-GOM',  'Gomas / caucho'),
+            ('CAT05','MAT-OTR',  'Otros materiales')
+        ) AS v(parent_code, code, description)
+            ON v.parent_code = p.code
+        ON CONFLICT (code) DO UPDATE
+            SET description = EXCLUDED.description
+        RETURNING id, code
+        ),
+        level1 AS (
+        SELECT id, code FROM upsert_level1
+        )
+
+        -- 3) HIJOS (nivel 2) con ejemplos concretos
+        INSERT INTO public.allergies_list (id, code, description, created_at, parent_id)
+        SELECT uuid_generate_v4(), v.code, v.description, now(), l1.id
+        FROM level1 l1
+        JOIN (VALUES
+        ('MED-PEN','MED-PEN-AMOX','Amoxicilina'),
+        ('MED-PEN','MED-PEN-AMP','Ampicilina'),
+        ('MED-PEN','MED-PEN-CLOX','Cloxacilina'),
+        ('MED-PEN','MED-PEN-PEN','Penicilina G/V'),
+        ('MED-CEF','MED-CEF-1G','Cefazolina / 1ª generación'),
+        ('MED-CEF','MED-CEF-2G','Cefuroxima / 2ª generación'),
+        ('MED-CEF','MED-CEF-3G','Ceftriaxona / 3ª generación'),
+        ('MED-CEF','MED-CEF-4G','Cefepima / 4ª generación'),
+        ('MED-AINE','MED-AINE-IBU','Ibuprofeno'),
+        ('MED-AINE','MED-AINE-ASA','Ácido acetilsalicílico (Aspirina)'),
+        ('MED-AINE','MED-AINE-NAP','Naproxeno'),
+        ('MED-AINE','MED-AINE-DIC','Diclofenaco'),
+        ('MED-ANL','MED-ANL-LID','Lidocaína'),
+        ('MED-ANL','MED-ANL-BUP','Bupivacaína'),
+        ('MED-ANL','MED-ANL-ART','Articaína'),
+        ('MED-QUI','MED-QUI-CIP','Ciprofloxacino'),
+        ('MED-QUI','MED-QUI-LEV','Levofloxacino'),
+        ('MED-QUI','MED-QUI-MOX','Moxifloxacino'),
+        ('AMB-POL','AMB-POL-GRA','Gramíneas'),
+        ('AMB-POL','AMB-POL-OLI','Olivo'),
+        ('AMB-POL','AMB-POL-CUP','Cupresáceas (ciprés)'),
+        ('AMB-POL','AMB-POL-PLA','Plátano de sombra'),
+        ('AMB-POL','AMB-POL-PAR','Parietaria'),
+        ('AMB-POL','AMB-POL-AMBR','Ambrosía'),
+        ('AMB-ACA','AMB-ACA-DP','Dermatophagoides pteronyssinus'),
+        ('AMB-ACA','AMB-ACA-DF','Dermatophagoides farinae'),
+        ('AMB-ACA','AMB-ACA-BL','Blomia tropicalis'),
+        ('AMB-MOH','AMB-MOH-ALT','Alternaria'),
+        ('AMB-MOH','AMB-MOH-ASP','Aspergillus'),
+        ('AMB-MOH','AMB-MOH-CLA','Cladosporium'),
+        ('AMB-ANI','AMB-ANI-GAT','Gato'),
+        ('AMB-ANI','AMB-ANI-PER','Perro'),
+        ('AMB-ANI','AMB-ANI-CAB','Caballo'),
+        ('ALI-GLU','ALI-GLU-TRI','Trigo'),
+        ('ALI-GLU','ALI-GLU-CEB','Cebada'),
+        ('ALI-GLU','ALI-GLU-CEN','Centeno'),
+        ('ALI-GLU','ALI-GLU-AVE','Avena (puede contaminarse)'),
+        ('ALI-LAC','ALI-LAC-CAS','Caseína'),
+        ('ALI-LAC','ALI-LAC-LAC','Lactoalbúmina / Lactoglobulina'),
+        ('ALI-HUE','ALI-HUE-CLA','Clara'),
+        ('ALI-HUE','ALI-HUE-YEM','Yema'),
+        ('ALI-PES','ALI-PES-BAC','Bacalao'),
+        ('ALI-PES','ALI-PES-ATU','Atún'),
+        ('ALI-PES','ALI-PES-SAL','Salmón'),
+        ('ALI-CRU','ALI-CRU-GAM','Gamba'),
+        ('ALI-CRU','ALI-CRU-LAN','Langostino'),
+        ('ALI-CRU','ALI-CRU-CAN','Cangrejo'),
+        ('ALI-MOL','ALI-MOL-MEJ','Mejillón'),
+        ('ALI-MOL','ALI-MOL-ALM','Almeja'),
+        ('ALI-MOL','ALI-MOL-CAL','Calamar / sepia'),
+        ('ALI-CAC','ALI-CAC-CAC','Cacahuete'),
+        ('ALI-FRU','ALI-FRU-ALM','Almendra'),
+        ('ALI-FRU','ALI-FRU-AVZ','Avellana'),
+        ('ALI-FRU','ALI-FRU-NUE','Nuez'),
+        ('ALI-FRU','ALI-FRU-ANA','Anacardo'),
+        ('ALI-FRU','ALI-FRU-PIST','Pistacho'),
+        ('ALI-FRU','ALI-FRU-MACA','Macadamia'),
+        ('ALI-FRU','ALI-FRU-PEC','Pacana'),
+        ('ALI-FRU','ALI-FRU-PIN','Piñón'),
+        ('ALI-SOJ','ALI-SOJ-SOJ','Soja'),
+        ('ALI-SES','ALI-SES-SES','Sésamo'),
+        ('ALI-MOS','ALI-MOS-MOS','Mostaza'),
+        ('ALI-API','ALI-API-API','Apio'),
+        ('ALI-SULF','ALI-SULF-SO2','Dióxido de azufre / sulfitos'),
+        ('ALI-ALTR','ALI-ALTR-ALT','Altramuz'),
+        ('ALI-FRU2','ALI-FRU2-MAN','Manzana'),
+        ('ALI-FRU2','ALI-FRU2-MEL','Melocotón'),
+        ('ALI-FRU2','ALI-FRU2-KIW','Kiwi'),
+        ('ALI-FRU2','ALI-FRU2-PLA','Plátano'),
+        ('ALI-FRU2','ALI-FRU2-AGU','Aguacate'),
+        ('INS-ABE','INS-ABE-ABE','Picadura de abeja'),
+        ('INS-AVI','INS-AVI-AVI','Picadura de avispa'),
+        ('INS-HOR','INS-HOR-HOR','Picadura/mordedura de hormiga'),
+        ('MAT-LAT','MAT-LAT-LAT','Látex'),
+        ('MAT-NIQ','MAT-NIQ-NIQ','Níquel'),
+        ('MAT-COB','MAT-COB-COB','Cobalto'),
+        ('MAT-CRO','MAT-CRO-CRO','Cromo'),
+        ('MAT-ADH','MAT-ADH-ACR','Acrilatos'),
+        ('MAT-FRA','MAT-FRA-FRA','Fragancias'),
+        ('MAT-PAR','MAT-PAR-ISO','Isotiazolinonas (MI/MCI)'),
+        ('MAT-PAR','MAT-PAR-PAR','Parabenos'),
+        ('MAT-TIN','MAT-TIN-PPD','PPD (tintes capilares)')
+        ) AS v(parent_code, code, description)
+        ON v.parent_code = l1.code
+        ON CONFLICT (code) DO UPDATE
+        SET description = EXCLUDED.description;
+
+    -- Seed Habits List
+    INSERT INTO public.habits_list (code, description, category) VALUES
+    ('H001', 'Fumador', 'Sustancias'),
+    ('H002', 'Ex-Fumador', 'Sustancias'),
+    ('H003', 'Consumo de Alcohol', 'Sustancias'),
+    ('H004', 'Sedentarismo', 'Estilo de Vida'),
+    ('H005', 'Actividad Física Regular', 'Estilo de Vida'),
+    ('H006', 'Dieta Equilibrada', 'Nutrición'),
+    ('H007', 'Dieta Alta en Grasas', 'Nutrición'),
+    ('H008', 'Vegetariano', 'Nutrición'),
+    ('H009', 'Vegano', 'Nutrición'),
+    ('H010', 'Sueño Irregular', 'Sueño'),
+    ('H011', 'Insomnio', 'Sueño'),
+    ('H012', 'Estrés Alto', 'Psicológico')
+    ON CONFLICT (code) DO NOTHING;
         INSERT INTO public.diagnoses (codigo, descripcion)
         VALUES 
             ('Z00.0', 'Examen médico general'),
@@ -1687,3 +2083,176 @@
   ALTER FUNCTION public.toggle_user_active(UUID, BOOLEAN) OWNER TO postgres;
   REVOKE ALL ON FUNCTION public.toggle_user_active(UUID, BOOLEAN) FROM PUBLIC;
   GRANT EXECUTE ON FUNCTION public.toggle_user_active(UUID, BOOLEAN) TO authenticated;
+
+  -- 12. STORAGE BUCKETS & POLICIES
+  
+  -- 12.1 Create practitioner-documents bucket
+  INSERT INTO storage.buckets (id, name, public)
+  VALUES ('practitioner-documents', 'practitioner-documents', true)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- 12.2 Create patient-documents bucket
+  INSERT INTO storage.buckets (id, name, public)
+  VALUES ('patient-documents', 'patient-documents', true)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- 12.3 Policies for storage buckets
+  
+  -- Drop existing policies if they exist (using all known names for thorough cleanup)
+  DROP POLICY IF EXISTS "Super Admins can manage practitioner documents" ON storage.objects;
+  DROP POLICY IF EXISTS "Practitioners can manage their own documents" ON storage.objects;
+  DROP POLICY IF EXISTS "Practitioners can view their own documents" ON storage.objects;
+  DROP POLICY IF EXISTS "Super Admins can manage patient documents" ON storage.objects;
+  DROP POLICY IF EXISTS "Practitioners can manage patient documents" ON storage.objects;
+  DROP POLICY IF EXISTS "Practitioners can view patient documents" ON storage.objects;
+  
+  -- Practitioner Documents Policies
+  DROP POLICY IF EXISTS "Super Admins can manage practitioner documents" ON storage.objects;
+  CREATE POLICY "Super Admins can manage practitioner documents"
+  ON storage.objects FOR ALL TO authenticated
+  USING (bucket_id = 'practitioner-documents' AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'super_admin'));
+
+  DROP POLICY IF EXISTS "Practitioners can manage their own documents" ON storage.objects;
+  CREATE POLICY "Practitioners can manage their own documents"
+  ON storage.objects FOR ALL TO authenticated
+  USING (bucket_id = 'practitioner-documents' AND (storage.foldername(name))[1] IN (SELECT id::text FROM public.practitioners WHERE user_id = auth.uid()))
+  WITH CHECK (bucket_id = 'practitioner-documents' AND (storage.foldername(name))[1] IN (SELECT id::text FROM public.practitioners WHERE user_id = auth.uid()));
+
+  -- Patient Documents Policies
+  DROP POLICY IF EXISTS "Super Admins can manage patient documents" ON storage.objects;
+  CREATE POLICY "Super Admins can manage patient documents"
+  ON storage.objects FOR ALL TO authenticated
+  USING (bucket_id = 'patient-documents' AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'super_admin'));
+
+  DROP POLICY IF EXISTS "Practitioners can view patient documents" ON storage.objects;
+  CREATE POLICY "Practitioners can view patient documents"
+  ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'patient-documents' AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'practitioner'));
+
+  DROP POLICY IF EXISTS "Practitioners can upload patient documents" ON storage.objects;
+  CREATE POLICY "Practitioners can upload patient documents"
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'patient-documents' AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'practitioner'));
+
+  -- 13. MIGRATIONS & FIXES
+  
+  -- 13.1 Ensure practitioner_documents has all necessary columns and correct trigger
+  DO $$
+  BEGIN
+      -- Add columns if missing
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'practitioner_documents' AND column_name = 'category') THEN
+          ALTER TABLE public.practitioner_documents ADD COLUMN category practitioner_document_category DEFAULT 'other' NOT NULL;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'practitioner_documents' AND column_name = 'fid') THEN
+          ALTER TABLE public.practitioner_documents ADD COLUMN fid TEXT;
+      END IF;
+  END $$;
+
+  -- Fix Trigger Function for Practitioners
+  CREATE OR REPLACE FUNCTION public.sync_practitioner_data_to_documents()
+  RETURNS TRIGGER AS $func$
+  DECLARE
+      practitioner_fid TEXT;
+  BEGIN
+      SELECT fid INTO practitioner_fid FROM public.practitioners WHERE id = NEW.practitioner_id;
+      IF practitioner_fid IS NOT NULL THEN
+          NEW.fid := practitioner_fid;
+      END IF;
+      RETURN NEW;
+  END;
+  $func$ LANGUAGE plpgsql;
+
+  DROP TRIGGER IF EXISTS trigger_sync_practitioner_data_to_documents ON public.practitioner_documents;
+  CREATE TRIGGER trigger_sync_practitioner_data_to_documents
+      BEFORE INSERT ON public.practitioner_documents
+      FOR EACH ROW EXECUTE FUNCTION public.sync_practitioner_data_to_documents();
+
+  -- 13.2 Ensure patient_documents has all necessary columns and trigger
+  DO $migration$
+  BEGIN
+      -- Ensure columns exist
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'patient_documents' AND column_name = 'practitioner_id') THEN
+          ALTER TABLE public.patient_documents ADD COLUMN practitioner_id UUID;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'patient_documents' AND column_name = 'category') THEN
+          ALTER TABLE public.patient_documents ADD COLUMN category patient_document_category DEFAULT 'administrative_uploaded' NOT NULL;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'patient_documents' AND column_name = 'fid') THEN
+          ALTER TABLE public.patient_documents ADD COLUMN fid TEXT;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'patient_documents' AND column_name = 'cip') THEN
+          ALTER TABLE public.patient_documents ADD COLUMN cip TEXT;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'patient_documents' AND column_name = 'document_type') THEN
+          ALTER TABLE public.patient_documents ADD COLUMN document_type TEXT;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'patient_documents' AND column_name = 'title') THEN
+          ALTER TABLE public.patient_documents ADD COLUMN title TEXT;
+      END IF;
+
+      -- Populate existing records to avoid NOT NULL violations
+      UPDATE public.patient_documents SET document_type = category::text WHERE document_type IS NULL;
+      UPDATE public.patient_documents SET title = name WHERE title IS NULL;
+
+      -- Enforce NOT NULL
+      ALTER TABLE public.patient_documents ALTER COLUMN document_type SET NOT NULL;
+      ALTER TABLE public.patient_documents ALTER COLUMN title SET NOT NULL;
+  END $migration$;
+
+  -- Fix/Create Trigger Function for Patients
+  CREATE OR REPLACE FUNCTION public.sync_patient_data_to_documents()
+  RETURNS TRIGGER AS $func$
+  DECLARE
+      p_fid TEXT;
+      p_cip TEXT;
+  BEGIN
+      -- Pull CIP from patient
+      SELECT cip INTO p_cip FROM public.patients WHERE id = NEW.patient_id;
+      -- Pull FID from practitioner (if linked)
+      IF NEW.practitioner_id IS NOT NULL THEN
+          SELECT fid INTO p_fid FROM public.practitioners WHERE id = NEW.practitioner_id;
+      END IF;
+
+      IF p_fid IS NOT NULL THEN NEW.fid := p_fid; END IF;
+      IF p_cip IS NOT NULL THEN NEW.cip := p_cip; END IF;
+      RETURN NEW;
+  END;
+  $func$ LANGUAGE plpgsql;
+
+  DROP TRIGGER IF EXISTS trigger_sync_patient_data_to_documents ON public.patient_documents;
+  CREATE TRIGGER trigger_sync_patient_data_to_documents
+      BEFORE INSERT ON public.patient_documents
+      FOR EACH ROW EXECUTE FUNCTION public.sync_patient_data_to_documents();
+
+  -- 13.3 RLS Policies for Tables
+  ALTER TABLE public.practitioner_documents ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE public.patient_documents ENABLE ROW LEVEL SECURITY;
+
+  DROP POLICY IF EXISTS "Super admins can manage all practitioner documents" ON public.practitioner_documents;
+  DROP POLICY IF EXISTS "Practitioners can view their own document records" ON public.practitioner_documents;
+  DROP POLICY IF EXISTS "Super admins can manage all patient documents" ON public.patient_documents;
+  DROP POLICY IF EXISTS "Practitioners can manage patient documents" ON public.patient_documents;
+  DROP POLICY IF EXISTS "Practitioners can view patient documents" ON public.patient_documents;
+  DROP POLICY IF EXISTS "Practitioners can insert patient documents" ON public.patient_documents;
+
+  CREATE POLICY "Super admins can manage all practitioner documents"
+  ON public.practitioner_documents FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'super_admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'super_admin'));
+
+  CREATE POLICY "Practitioners can view their own document records"
+  ON public.practitioner_documents FOR SELECT TO authenticated
+  USING (practitioner_id IN (SELECT id FROM public.practitioners WHERE user_id = auth.uid()));
+
+  CREATE POLICY "Super admins can manage all patient documents"
+  ON public.patient_documents FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'super_admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'super_admin'));
+
+  CREATE POLICY "Practitioners can view patient documents"
+  ON public.patient_documents FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('practitioner', 'super_admin')));
+
+  CREATE POLICY "Practitioners can insert patient documents"
+  ON public.patient_documents FOR INSERT TO authenticated
+  WITH CHECK (EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('practitioner', 'super_admin')));

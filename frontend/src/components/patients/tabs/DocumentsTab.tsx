@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
 import {
     FileText,
@@ -9,6 +10,7 @@ import {
     Download,
     Eye,
     Trash2,
+    Send,
     Loader2,
     Search,
     Calendar
@@ -16,6 +18,7 @@ import {
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { GenerateDocumentModal } from '@/components/patients/modals/GenerateDocumentModal';
+import { toast } from 'sonner';
 
 interface DocumentsTabProps {
     patientId: string;
@@ -24,9 +27,11 @@ interface DocumentsTabProps {
 interface Document {
     id: string;
     name: string;
+    title?: string;
+    document_type?: string;
     url: string;
     type: string;
-    category: 'administrative_generated' | 'administrative_uploaded' | 'medical_test';
+    category: 'administrative_generated' | 'administrative_uploaded' | 'medical_test' | 'consultation_report' | 'patient_provided';
     created_at: string;
     practitioner_id: string;
     practitioner?: {
@@ -36,6 +41,7 @@ interface Document {
 }
 
 export function DocumentsTab({ patientId }: DocumentsTabProps) {
+    const { role } = useAuthStore();
     const [documents, setDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -52,7 +58,7 @@ export function DocumentsTab({ patientId }: DocumentsTabProps) {
                 .from('patient_documents')
                 .select(`
                     *,
-                    practitioner:practitioners(first_name, last_name_1)
+                    practitioner:practitioners!practitioner_id(first_name, last_name_1)
                 `)
                 .eq('patient_id', patientId)
                 .order('created_at', { ascending: false });
@@ -66,21 +72,75 @@ export function DocumentsTab({ patientId }: DocumentsTabProps) {
         }
     };
 
+    const handleDownload = async (url: string, fileName: string) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Error downloading document:', error);
+            // Fallback to opening in new tab if blob download fails
+            window.open(url, '_blank');
+        }
+    };
+
+    const handleDelete = async (docId: string, url: string) => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este documento?')) return;
+
+        try {
+            // 1. Delete from Storage
+            const path = url.split('/').slice(-2).join('/'); // basic path extraction
+            const { error: storageError } = await supabase.storage
+                .from('patient-documents')
+                .remove([path]);
+
+            if (storageError) console.error('Error deleting from storage:', storageError);
+
+            // 2. Delete from Database
+            const { error: dbError } = await supabase
+                .from('patient_documents')
+                .delete()
+                .eq('id', docId);
+
+            if (dbError) throw dbError;
+
+            toast.success('Documento eliminado correctamente');
+            fetchDocuments();
+        } catch (error: any) {
+            console.error('Error deleting document:', error);
+            toast.error('No se pudo eliminar el documento.');
+        }
+    };
+
     const getCategoryLabel = (category: string) => {
         switch (category) {
+            case 'consultation_report':
+                return { label: 'Sistema - Informe de Consulta', color: 'bg-purple-50 text-purple-700 border-purple-100' };
             case 'administrative_generated':
-                return { label: 'Admin (Generado)', color: 'bg-blue-50 text-blue-700 border-blue-100' };
+                return { label: 'Sistema - Formulario Admin.', color: 'bg-blue-50 text-blue-700 border-blue-100' };
+            case 'patient_provided':
+                return { label: 'Aportado por Paciente', color: 'bg-amber-50 text-amber-700 border-amber-100' };
             case 'administrative_uploaded':
-                return { label: 'Admin (Subido)', color: 'bg-indigo-50 text-indigo-700 border-indigo-100' };
+                return { label: 'Subido por Gestión', color: 'bg-indigo-50 text-indigo-700 border-indigo-100' };
             case 'medical_test':
-                return { label: 'Prueba Médica', color: 'bg-green-50 text-green-700 border-green-100' };
+                return { label: 'Prueba / Resultado Médico', color: 'bg-green-50 text-green-700 border-green-100' };
             default:
                 return { label: category, color: 'bg-gray-50 text-gray-700 border-gray-100' };
         }
     };
 
     const filteredDocuments = documents.filter(doc =>
-        doc.name.toLowerCase().includes(searchTerm.toLowerCase())
+        doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (doc.title && doc.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        getCategoryLabel(doc.category).label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (doc.practitioner && `${doc.practitioner.first_name} ${doc.practitioner.last_name_1}`.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
@@ -155,9 +215,16 @@ export function DocumentsTab({ patientId }: DocumentsTabProps) {
                                                 <div className="h-8 w-8 bg-brand-50 text-brand-600 rounded flex items-center justify-center shrink-0">
                                                     <FileText className="h-4 w-4" />
                                                 </div>
-                                                <span className="text-sm font-bold text-gray-900 group-hover:text-brand-600 transition-colors">
-                                                    {doc.name}
-                                                </span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-gray-900 group-hover:text-brand-600 transition-colors">
+                                                        {doc.title || doc.name}
+                                                    </span>
+                                                    {(doc.title && doc.title !== doc.name) && (
+                                                        <span className="text-[10px] text-gray-400 font-medium leading-none mt-0.5">
+                                                            {doc.name}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -176,16 +243,45 @@ export function DocumentsTab({ patientId }: DocumentsTabProps) {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right whitespace-nowrap">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-brand-600">
+                                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-gray-400 hover:text-brand-600"
+                                                    onClick={() => window.open(doc.url, '_blank')}
+                                                    title="Ver documento"
+                                                >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-brand-600">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-gray-400 hover:text-brand-600"
+                                                    onClick={() => handleDownload(doc.url, doc.name)}
+                                                    title="Descargar"
+                                                >
                                                     <Download className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-red-600">
-                                                    <Trash2 className="h-4 w-4" />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-gray-400 hover:text-brand-600"
+                                                    onClick={() => toast.info('Funcionalidad de envío en desarrollo')}
+                                                    title="Enviar documento"
+                                                >
+                                                    <Send className="h-4 w-4" />
                                                 </Button>
+                                                {role === 'super_admin' && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
+                                                        onClick={() => handleDelete(doc.id, doc.url)}
+                                                        title="Eliminar"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -209,6 +305,8 @@ export function DocumentsTab({ patientId }: DocumentsTabProps) {
             <GenerateDocumentModal
                 isOpen={isGenerateModalOpen}
                 onClose={() => setIsGenerateModalOpen(false)}
+                patientId={patientId}
+                onGenerated={fetchDocuments}
             />
         </div >
     );

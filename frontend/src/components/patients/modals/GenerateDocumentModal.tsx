@@ -1,11 +1,17 @@
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
-import { FileText, Calendar, ShieldCheck, UserCheck, AlertCircle, FileSignature } from 'lucide-react';
+import { FileText, Calendar, ShieldCheck, UserCheck, AlertCircle, FileSignature, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
 
 interface GenerateDocumentModalProps {
     isOpen: boolean;
     onClose: () => void;
+    patientId: string;
+    onGenerated?: () => void;
 }
 
 type DocumentType = {
@@ -15,9 +21,12 @@ type DocumentType = {
     icon: any;
     status: 'active' | 'coming_soon';
     category: 'consultation' | 'general' | 'internal';
+    dbCategory: 'consultation_report' | 'administrative_generated';
 };
 
-export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModalProps) {
+export function GenerateDocumentModal({ isOpen, onClose, patientId, onGenerated }: GenerateDocumentModalProps) {
+    const { user } = useAuthStore();
+    const [isGenerating, setIsGenerating] = useState(false);
     const documentTypes: DocumentType[] = [
         // A. Consultation Related
         {
@@ -26,7 +35,8 @@ export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModal
             description: 'Diagnóstico y observaciones. Vinculado a visita.',
             icon: FileText,
             status: 'coming_soon',
-            category: 'consultation'
+            category: 'consultation',
+            dbCategory: 'consultation_report'
         },
         {
             id: 'attendance_proof',
@@ -34,7 +44,8 @@ export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModal
             description: 'Solo fecha, hora y centro. Sin diagnóstico.',
             icon: Calendar,
             status: 'coming_soon',
-            category: 'consultation'
+            category: 'consultation',
+            dbCategory: 'administrative_generated'
         },
         {
             id: 'medical_certificate',
@@ -42,7 +53,8 @@ export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModal
             description: 'Constancia de atención sin detalle patológico.',
             icon: FileSignature,
             status: 'coming_soon',
-            category: 'consultation'
+            category: 'consultation',
+            dbCategory: 'administrative_generated'
         },
         // B. General Administrative
         {
@@ -51,7 +63,8 @@ export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModal
             description: 'Cláusulas obligatorias de protección de datos.',
             icon: ShieldCheck,
             status: 'coming_soon',
-            category: 'general'
+            category: 'general',
+            dbCategory: 'administrative_generated'
         },
         {
             id: 'representative_auth',
@@ -59,7 +72,8 @@ export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModal
             description: 'Para menores o personas dependientes.',
             icon: UserCheck,
             status: 'active',
-            category: 'general'
+            category: 'general',
+            dbCategory: 'administrative_generated'
         },
         {
             id: 'consent_revocation',
@@ -67,10 +81,55 @@ export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModal
             description: 'Retirada de permisos previamente otorgados.',
             icon: AlertCircle,
             status: 'active',
-            category: 'general'
+            category: 'general',
+            dbCategory: 'administrative_generated'
         },
-        // C. Internal
     ];
+
+    const handleGenerate = async (docType: DocumentType) => {
+        if (docType.status !== 'active' || isGenerating || !user?.id) return;
+
+        setIsGenerating(true);
+        try {
+            // Get practitioner record
+            const { data: practitioner, error: pError } = await supabase
+                .from('practitioners')
+                .select('id')
+                .eq('user_id', user.id)
+                .single();
+
+            if (pError || !practitioner) throw new Error('No practitioner found for current user');
+
+            // Generate "mock" document for now (real PDF generation would go here)
+            const filename = `${docType.id.toUpperCase()}_${Date.now()}.pdf`;
+
+            // For now, we'll just create a record with a placeholder URL 
+            // In a real app, we would actually generate the PDF and upload it to storage
+            const { error: docError } = await (supabase
+                .from('patient_documents') as any)
+                .insert({
+                    patient_id: patientId,
+                    name: filename,
+                    title: docType.title,
+                    document_type: docType.id,
+                    url: '#', // Placeholder
+                    type: 'pdf',
+                    category: docType.dbCategory,
+                    practitioner_id: (practitioner as any).id
+                });
+
+            if (docError) throw docError;
+
+            toast.success(`${docType.title} generado correctamente`);
+            onGenerated?.();
+            onClose();
+        } catch (error: any) {
+            console.error('Error generating document:', error);
+            toast.error('Error al generar el documento: ' + (error.message || 'Error desconocido'));
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
     const renderSection = (title: string, category: string) => (
         <div className="mb-4 last:mb-0">
@@ -81,23 +140,22 @@ export function GenerateDocumentModal({ isOpen, onClose }: GenerateDocumentModal
                         key={doc.id}
                         className={cn(
                             "relative overflow-hidden rounded-lg border p-3 flex items-start gap-3 transition-all",
-                            doc.status === 'active'
+                            doc.status === 'active' && !isGenerating
                                 ? "bg-white border-gray-200 hover:border-brand-300 hover:shadow-md cursor-pointer group"
                                 : "bg-gray-50 border-gray-100 opacity-80 cursor-not-allowed"
                         )}
-                        onClick={() => {
-                            if (doc.status === 'active') {
-                                // TODO: Handle generation
-                                console.log('Generate', doc.id);
-                            }
-                        }}
+                        onClick={() => handleGenerate(doc)}
                     >
                         {/* Icon */}
                         <div className={cn(
                             "h-8 w-8 rounded-lg flex items-center justify-center shrink-0",
                             doc.status === 'active' ? "bg-brand-50 text-brand-600 group-hover:bg-brand-100" : "bg-gray-100 text-gray-400"
                         )}>
-                            <doc.icon className="h-4 w-4" />
+                            {isGenerating && doc.status === 'active' ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <doc.icon className="h-4 w-4" />
+                            )}
                         </div>
 
                         {/* Content */}

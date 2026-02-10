@@ -9,13 +9,13 @@ interface ConsultationHeaderProps {
 
 export function ConsultationHeader({ data }: ConsultationHeaderProps) {
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm gap-4">
-            <div className="flex items-center gap-4">
-                <div className="h-14 w-14 bg-brand-50 rounded-2xl flex items-center justify-center border border-brand-100 shadow-sm">
-                    <User className="h-8 w-8 text-brand-600" />
+        <div className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 bg-white rounded-xl border border-gray-200 shadow-sm gap-3 md:gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
+                <div className="h-12 w-12 md:h-14 md:w-14 bg-brand-50 rounded-2xl flex items-center justify-center border border-brand-100 shadow-sm">
+                    <User className="h-6 w-6 md:h-8 md:w-8 text-brand-600" />
                 </div>
                 <div>
-                    <h4 className="text-lg font-black text-gray-900 leading-tight">
+                    <h4 className="text-base md:text-lg font-black text-gray-900 leading-tight">
                         {data.patient?.last_name_1} {data.patient?.last_name_2 ? `${data.patient.last_name_2}, ` : ', '}{data.patient?.first_name}
                     </h4>
                     <div className="flex items-center gap-3 mt-1 text-[11px] font-bold text-gray-500 uppercase tracking-widest">

@@ -11,7 +11,8 @@ import {
     Settings,
     LogOut,
     Bell,
-    HelpCircle
+    HelpCircle,
+    Stethoscope
 } from 'lucide-react';
 
 export default function AdminLayout() {
@@ -19,6 +20,7 @@ export default function AdminLayout() {
     const navigate = useNavigate();
     const [stats, setStats] = useState({
         users: 0,
+        practitioners: 0,
         patients: 0,
         portfolios: 0,
         alerts: 0
@@ -32,6 +34,7 @@ export default function AdminLayout() {
             if (data) {
                 setStats({
                     users: data.users || 0,
+                    practitioners: data.practitioners || 0,
                     patients: data.patients || 0,
                     portfolios: data.portfolios || 0,
                     alerts: data.alerts || 0
@@ -61,6 +64,7 @@ export default function AdminLayout() {
         { name: 'Usuarios', path: '/admin/users', icon: Users },
         { name: 'Portfolios', path: '/admin/portfolios', icon: Briefcase },
         { name: 'Roles y Permisos', path: '/admin/roles', icon: Shield },
+        { name: 'Facultativos', path: '/admin/practitioners', icon: Stethoscope },
         { name: 'Pacientes', path: '/admin/patients', icon: UserSquare2 },
         { name: 'Actividad/Logs', path: '/admin/logs', icon: Activity },
         { name: 'Ajustes', path: '/admin/settings', icon: Settings },
@@ -81,6 +85,10 @@ export default function AdminLayout() {
                             <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-md border border-gray-100">
                                 <span className="text-gray-500 text-xs">Usuarios:</span>
                                 <span className="font-bold text-brand-700">{stats.users}</span>
+                            </div>
+                            <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-md border border-gray-100">
+                                <span className="text-gray-500 text-xs">Facultativos:</span>
+                                <span className="font-bold text-brand-700">{stats.practitioners}</span>
                             </div>
                             <div className="flex items-center gap-2 px-2 py-1 bg-gray-50 rounded-md border border-gray-100">
                                 <span className="text-gray-500 text-xs">Pacientes:</span>

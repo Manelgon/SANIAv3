@@ -72,7 +72,7 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
             isOpen={isOpen}
             onClose={onClose}
             title={`Detalle de Consulta - Facultativo: ${practitionerName}`}
-            className="max-w-5xl"
+            className="max-w-5xl w-full md:w-full h-[100dvh] md:h-auto p-4 md:p-6 rounded-none md:rounded-lg"
         >
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-20">

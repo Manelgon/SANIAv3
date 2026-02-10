@@ -7,7 +7,8 @@ import {
     Briefcase,
     LogOut,
     Bell,
-    HelpCircle
+    HelpCircle,
+    UserCircle2
 } from 'lucide-react';
 
 export default function PractitionerLayout() {
@@ -54,6 +55,7 @@ export default function PractitionerLayout() {
     const navItems = [
         { name: 'Mis Carteras', path: '/dashboard/portfolios', icon: Briefcase },
         { name: 'Mis Pacientes', path: '/dashboard/patients', icon: UserSquare2 },
+        { name: 'Perfil', path: '/dashboard/perfil', icon: UserCircle2 },
     ];
 
     return (

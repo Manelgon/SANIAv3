@@ -19,7 +19,8 @@ interface ResponsiveTableProps<T> {
     mobileBadges?: (row: T) => ReactNode;
     mobileActions: (row: T) => ReactNode;
     emptyMessage?: string;
-    isLoading?: boolean; // Added isLoading prop
+    isLoading?: boolean;
+    onRowClick?: (row: T) => void;
 }
 
 export function ResponsiveTable<T>({
@@ -32,6 +33,7 @@ export function ResponsiveTable<T>({
     mobileActions,
     emptyMessage = "No hay datos disponibles",
     isLoading = false,
+    onRowClick,
 }: ResponsiveTableProps<T>) {
     if (isLoading) {
         return (
@@ -57,7 +59,11 @@ export function ResponsiveTable<T>({
                 {rows.map((row) => (
                     <div
                         key={getRowKey(row)}
-                        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                        className={cn(
+                            "rounded-xl border border-slate-200 bg-white p-4 shadow-sm",
+                            onRowClick && "cursor-pointer hover:border-brand-200 hover:shadow-md transition-all"
+                        )}
+                        onClick={() => onRowClick?.(row)}
                     >
                         <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
@@ -72,7 +78,7 @@ export function ResponsiveTable<T>({
                                 )}
                             </div>
 
-                            <div className="shrink-0 ml-2">{mobileActions(row)}</div>
+                            <div className="shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>{mobileActions(row)}</div>
                         </div>
                     </div>
                 ))}
@@ -102,14 +108,24 @@ export function ResponsiveTable<T>({
                             {rows.map((row) => (
                                 <tr
                                     key={getRowKey(row)}
-                                    className="hover:bg-slate-50/80 transition-colors"
+                                    className={cn(
+                                        "hover:bg-slate-50/80 transition-colors",
+                                        onRowClick && "cursor-pointer"
+                                    )}
+                                    onClick={() => onRowClick?.(row)}
                                 >
                                     {columns.map((col) => (
                                         <td
                                             key={col.key}
                                             className={cn("px-6 py-4 align-middle text-slate-600", col.className)}
                                         >
-                                            {col.render(row)}
+                                            {col.key === 'actions' ? (
+                                                <div onClick={(e) => e.stopPropagation()}>
+                                                    {col.render(row)}
+                                                </div>
+                                            ) : (
+                                                col.render(row)
+                                            )}
                                         </td>
                                     ))}
                                 </tr>

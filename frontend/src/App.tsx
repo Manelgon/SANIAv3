@@ -10,6 +10,9 @@ import PractitionerLayout from '@/layouts/PractitionerLayout';
 import UsersPage from '@/pages/admin/Users';
 import PortfoliosPage from '@/pages/admin/Portfolios';
 import PatientsPage from '@/pages/admin/Patients';
+import PractitionersPage from '@/pages/admin/Practitioners';
+import PractitionerProfilePage from '@/pages/PractitionerProfile';
+import { PractitionerDetailView } from '@/components/users/PractitionerDetailView';
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) {
   const { session, role, isLoading } = useAuthStore();
@@ -58,6 +61,7 @@ function App() {
           <Route path="portfolios/:id" element={<PortfoliosPage />} />
           <Route path="patients" element={<PatientsPage />} />
           <Route path="patients/:id" element={<PatientsPage />} />
+          <Route path="perfil" element={<PractitionerProfilePage />} />
           <Route path="*" element={<Navigate to="/dashboard/portfolios" replace />} />
         </Route>
 
@@ -76,6 +80,8 @@ function App() {
           <Route path="portfolios/:id" element={<PortfoliosPage />} />
           <Route path="patients" element={<PatientsPage />} />
           <Route path="patients/:id" element={<PatientsPage />} />
+          <Route path="practitioners" element={<PractitionersPage />} />
+          <Route path="practitioners/:id" element={<PractitionerDetailView />} />
           <Route path="*" element={<Navigate to="/admin/users" replace />} />
         </Route>
 

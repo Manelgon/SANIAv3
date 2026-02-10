@@ -27,7 +27,7 @@ export function ConsultationVitals({ constants }: ConsultationVitalsProps) {
             </div>
             <div className="grid grid-cols-1 gap-2.5">
                 {constants.length > 0 ? constants.map((c, idx) => (
-                    <div key={idx} className="bg-gray-50/50 border border-gray-100 rounded-lg px-3 py-2.5 flex items-center justify-between transition-colors hover:bg-white hover:border-brand-100 shadow-sm">
+                    <div key={idx} className="bg-gray-50/50 border border-gray-100 rounded-lg p-2 sm:px-3 sm:py-2.5 flex items-center justify-between transition-colors hover:bg-white hover:border-brand-100 shadow-sm">
                         <div className="flex items-center gap-2.5">
                             <div className="h-7 w-7 bg-white rounded-md flex items-center justify-center text-gray-400 border border-gray-100">
                                 {getConstantIcon(c.constant?.code)}

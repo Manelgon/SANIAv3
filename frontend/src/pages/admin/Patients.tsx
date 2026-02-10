@@ -28,8 +28,11 @@ interface Patient {
     weight: number | null;
     background: string | null;
     habits: string | null;
+    locality: string | null;
     insured_number: string | null;
     address: any | null;
+    phone: string | null;
+    emergency_phone: string | null;
     created_at: string;
     last_sign_in_at: string | null;
     total_count?: number;
@@ -85,6 +88,7 @@ export default function PatientsPage() {
         { id: 'patient', label: 'Paciente', alwaysVisible: true },
         { id: 'cip', label: 'CIP' },
         { id: 'dni', label: 'DNI' },
+        { id: 'phone', label: 'Teléfono' },
         { id: 'gender', label: 'Género' },
         { id: 'portfolio', label: 'Cartera/ID' },
         { id: 'insured_number', label: 'Póliza' },
@@ -101,7 +105,7 @@ export default function PatientsPage() {
     // Load saved columns from localStorage or default
     const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
         const saved = localStorage.getItem('patients_table_columns');
-        return saved ? JSON.parse(saved) : ['patient', 'cip', 'dni', 'gender', 'blood_group', 'age', 'imc', 'birth_date', 'last_sign_in_at', 'created_at'];
+        return saved ? JSON.parse(saved) : ['patient', 'cip', 'dni', 'phone', 'gender', 'blood_group', 'age', 'imc', 'birth_date', 'last_sign_in_at', 'created_at'];
     });
 
     const toggleColumn = (columnId: string) => {
@@ -252,6 +256,8 @@ export default function PatientsPage() {
                                 };
                             case 'dni':
                                 return { ...baseCol, render: (patient: Patient) => <span className="text-sm text-gray-500 font-mono">{patient.dni}</span> };
+                            case 'phone':
+                                return { ...baseCol, render: (patient: Patient) => <span className="text-sm text-gray-500 font-mono">{patient.phone || "-"}</span> };
                             case 'gender':
                                 return {
                                     ...baseCol, render: (patient: Patient) => (

@@ -24,21 +24,24 @@ export function ConsultationDiagnoses({ diagnoses }: ConsultationDiagnosesProps)
                 </div>
                 <div className="divide-y divide-gray-100">
                     {diagnoses.length > 0 ? diagnoses.map((diag, idx) => (
-                        <div key={idx} className="flex items-center p-4 gap-6 hover:bg-gray-50/30 transition-colors">
-                            <div className="shrink-0 w-24">
-                                <span className={`inline-flex items-center justify-center w-full py-1 rounded text-[9px] font-black uppercase tracking-widest border shadow-sm ${diag.status === 'confirmed'
-                                    ? 'bg-green-50 text-green-700 border-green-200'
-                                    : diag.status === 'pending'
-                                        ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                                        : 'bg-red-50 text-red-700 border-red-200'
-                                    }`}>
-                                    {diag.status === 'confirmed' ? 'Confirmado' : diag.status === 'pending' ? 'Pendiente' : 'Inactivo'}
-                                </span>
-                            </div>
-                            <div className="shrink-0">
-                                <span className="px-2.5 py-1 bg-white border border-brand-100 text-brand-700 text-xs font-mono font-black rounded shadow-sm">
-                                    {diag.diagnosis_code || 'S/N'}
-                                </span>
+                        <div key={idx} className="flex flex-col sm:flex-row sm:items-center p-3 sm:p-4 gap-3 sm:gap-6 hover:bg-gray-50/30 transition-colors">
+                            {/* Mobile: Badge & Code Row */}
+                            <div className="flex items-center gap-3 w-full sm:w-auto">
+                                <div className="shrink-0 w-24">
+                                    <span className={`inline-flex items-center justify-center w-full py-1 rounded text-[9px] font-black uppercase tracking-widest border shadow-sm ${diag.status === 'confirmed'
+                                        ? 'bg-green-50 text-green-700 border-green-200'
+                                        : diag.status === 'pending'
+                                            ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                            : 'bg-red-50 text-red-700 border-red-200'
+                                        }`}>
+                                        {diag.status === 'confirmed' ? 'Confirmado' : diag.status === 'pending' ? 'Pendiente' : 'Inactivo'}
+                                    </span>
+                                </div>
+                                <div className="shrink-0">
+                                    <span className="px-2.5 py-1 bg-white border border-brand-100 text-brand-700 text-xs font-mono font-black rounded shadow-sm">
+                                        {diag.diagnosis_code || 'S/N'}
+                                    </span>
+                                </div>
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h6 className="text-sm font-bold text-gray-900 leading-tight">

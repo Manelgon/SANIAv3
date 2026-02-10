@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
+import { useNavigate } from "react-router-dom";
 import { TableColumnSelector, type ColumnDefinition } from "@/components/ui/TableColumnSelector";
-import { Plus, Search, MoreVertical, Shield, ShieldOff, CheckCircle, XCircle, ChevronRight, FileText } from "lucide-react";
+import { Plus, Search, MoreVertical, Shield, ShieldOff, CheckCircle, XCircle, ChevronRight, FileText, Eye } from "lucide-react";
 import { CreateUserModal } from "@/components/users/CreateUserModal";
 import { PractitionerDocumentsModal } from "@/components/users/PractitionerDocumentsModal";
 import { supabase } from "@/lib/supabase";
@@ -20,6 +21,7 @@ interface AdminUser {
     practitioner_id: string | null;
     patient_id: string | null;
     portfolio_id: string | null;
+    phone: string | null;
     portfolio_name: string | null;
     insured_number: string | null;
     updated_at: string;
@@ -30,6 +32,7 @@ interface AdminUser {
 }
 
 export default function UsersPage() {
+    const navigate = useNavigate();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -48,6 +51,7 @@ export default function UsersPage() {
         { id: 'user', label: 'Usuario', alwaysVisible: true },
         { id: 'fid', label: 'FID' },
         { id: 'cip', label: 'CIP' },
+        { id: 'phone', label: 'Teléfono' },
         { id: 'insured_number', label: 'Póliza' },
         { id: 'role', label: 'Rol' },
         { id: 'portfolio', label: 'Cartera' },
@@ -60,7 +64,7 @@ export default function UsersPage() {
     // Load saved columns from localStorage or default
     const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
         const saved = localStorage.getItem('users_table_columns_v2');
-        return saved ? JSON.parse(saved) : ['user', 'fid', 'cip', 'role', 'status', 'last_login'];
+        return saved ? JSON.parse(saved) : ['user', 'fid', 'cip', 'phone', 'role', 'status', 'last_login'];
     });
 
     const toggleColumn = (columnId: string) => {
@@ -192,6 +196,54 @@ export default function UsersPage() {
             <ResponsiveTable<AdminUser>
                 isLoading={isLoading}
                 rows={users}
+                getRowKey={(user) => user.id}
+                onRowClick={(user) => {
+                    if (user.role === 'practitioner' && user.practitioner_id) {
+                        navigate(`/admin/practitioners/${user.practitioner_id}`);
+                    }
+                }}
+                mobileTitle={(user) => user.full_name}
+                mobileMeta={(user) => (
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold text-gray-400">Email:</span>
+                            <span className="text-xs text-gray-600">{user.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-bold text-gray-400">Rol:</span>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase ${getRoleBadgeColor(user.role)}`}>
+                                {user.role}
+                            </span>
+                        </div>
+                    </div>
+                )}
+                mobileActions={(user: AdminUser) => (
+                    <div className="flex flex-col gap-2">
+                        {user.role === 'practitioner' && user.practitioner_id && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 text-[10px] font-black uppercase tracking-widest border-brand-200 text-brand-700 hover:bg-brand-50"
+                                onClick={() => navigate(`/admin/practitioners/${user.practitioner_id}`)}
+                            >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Ficha
+                            </Button>
+                        )}
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            className={`h-8 text-[10px] font-black uppercase tracking-widest ${user.active ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'}`}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleUserStatus(user.id, user.active);
+                            }}
+                        >
+                            {user.active ? <ShieldOff className="h-3 w-3 mr-1" /> : <Shield className="h-3 w-3 mr-1" />}
+                            {user.active ? 'Baja' : 'Alta'}
+                        </Button>
+                    </div>
+                )}
                 columns={[
                     ...allColumns.filter(col => visibleColumns.includes(col.id)).map(col => {
                         const baseCol = {
@@ -220,6 +272,12 @@ export default function UsersPage() {
                                 return {
                                     ...baseCol, render: (user: AdminUser) => (
                                         user.cip ? <code className={`text-xs font-mono font-semibold ${getRoleTextColor(user.role)}`}>{user.cip}</code> : <span className="text-gray-400 text-xs">-</span>
+                                    )
+                                };
+                            case 'phone':
+                                return {
+                                    ...baseCol, render: (user: AdminUser) => (
+                                        user.phone ? <span className={`text-xs text-gray-600`}>{user.phone}</span> : <span className="text-gray-400 text-xs">-</span>
                                     )
                                 };
                             case 'insured_number':
@@ -326,55 +384,6 @@ export default function UsersPage() {
                         )
                     }
                 ]}
-                getRowKey={(user) => user.id}
-                mobileTitle={(user) => user.full_name}
-                mobileMeta={(user) => (
-                    <>
-                        <div className="text-gray-500">{user.email}</div>
-                        {user.fid && <div className="text-xs font-mono mt-0.5">FID: {user.fid}</div>}
-                    </>
-                )}
-                mobileBadges={(user) => (
-                    <>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeColor(user.role)}`}>
-                            {user.role}
-                        </span>
-                        {user.active ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-100 font-medium">
-                                <CheckCircle className="h-3 w-3" /> Activo
-                            </span>
-                        ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-700 border border-red-100 font-medium">
-                                <XCircle className="h-3 w-3" /> Inactivo
-                            </span>
-                        )}
-                    </>
-                )}
-                mobileActions={(user) => (
-                    <div className="flex flex-col gap-2">
-                        {user.role === 'practitioner' && user.practitioner_id && (
-                            <button
-                                onClick={() => {
-                                    setSelectedPractitioner({ id: user.practitioner_id!, name: user.full_name });
-                                    setIsDocsModalOpen(true);
-                                }}
-                                className="p-2 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors shadow-sm"
-                                title="Ver documentos profesionales"
-                            >
-                                <FileText className="h-5 w-5" />
-                            </button>
-                        )}
-                        <button
-                            onClick={() => toggleUserStatus(user.id, user.active)}
-                            className={`p-2 rounded-lg transition-colors shadow-sm ${user.active
-                                ? "text-red-600 bg-red-50 hover:bg-red-100"
-                                : "text-green-600 bg-green-50 hover:bg-green-100"
-                                }`}
-                        >
-                            {user.active ? <ShieldOff className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
-                        </button>
-                    </div>
-                )}
                 emptyMessage="No se encontraron usuarios"
             />
 

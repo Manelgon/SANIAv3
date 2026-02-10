@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { FileText, Upload, X } from 'lucide-react';
+import { PHONE_PREFIXES } from '@/lib/constants';
 
 const practitionerSchema = z.object({
     email: z.string().email('Email inválido'),
@@ -18,6 +19,8 @@ const practitionerSchema = z.object({
     lastName1: z.string().min(2, 'Primer apellido requerido'),
     lastName2: z.string().optional(),
     dni: z.string().min(9, 'DNI/NIF inválido').max(9, 'DNI/NIF inválido'),
+    phone: z.string().min(9, 'Teléfono requerido (mínimo 9 dígitos)'),
+    emergencyPhone: z.string().optional(),
     birthDate: z.string().refine((date) => new Date(date) < new Date(), 'Fecha inválida'),
     licenseNumber: z.string().min(1, 'Número de colegiado requerido'),
     specialty: z.string().min(1, 'Especialidad requerida'),
@@ -46,6 +49,10 @@ const PROVINCES = [
 export function PractitionerForm({ onSuccess, onCancel }: { onSuccess?: () => void, onCancel: () => void }) {
     const [isLoading, setIsLoading] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState<{ file: File; category: string }[]>([]);
+
+    // Phone Prefix State
+    const [phonePrefix, setPhonePrefix] = useState('+34');
+    const [emergencyPhonePrefix, setEmergencyPhonePrefix] = useState('+34');
 
     const { register, handleSubmit, formState: { errors } } = useForm<PractitionerFormValues>({
         resolver: zodResolver(practitionerSchema)
@@ -129,6 +136,8 @@ export function PractitionerForm({ onSuccess, onCancel }: { onSuccess?: () => vo
                     specialty: data.specialty,
                     bio: data.bio || null,
                     birth_date: data.birthDate,
+                    phone: `${phonePrefix} ${data.phone}`,
+                    emergency_phone: data.emergencyPhone ? `${emergencyPhonePrefix} ${data.emergencyPhone}` : null,
                 });
 
             if (profileError) {
@@ -185,7 +194,7 @@ export function PractitionerForm({ onSuccess, onCancel }: { onSuccess?: () => vo
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-h-[80vh] overflow-y-auto p-1">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-1">
 
             {/* 1. Datos de Acceso */}
             <div className="space-y-4">
@@ -210,6 +219,42 @@ export function PractitionerForm({ onSuccess, onCancel }: { onSuccess?: () => vo
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input id="dni" label="DNI/NIF" placeholder="12345678X" required error={errors.dni?.message} {...register('dni')} />
                     <Input id="birthDate" label="Fecha de Nacimiento" type="date" required error={errors.birthDate?.message} {...register('birthDate')} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
+                        <div className="flex gap-2">
+                            <select
+                                className="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                value={phonePrefix}
+                                onChange={(e) => setPhonePrefix(e.target.value)}
+                            >
+                                {PHONE_PREFIXES.map(p => (
+                                    <option key={p.value} value={p.value}>{p.label}</option>
+                                ))}
+                            </select>
+                            <div className="flex-1">
+                                <Input id="phone" placeholder="600000000" error={errors.phone?.message} {...register('phone')} />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-1">
+                        <label className="block text-sm font-medium text-gray-700">Teléfono Emergencias</label>
+                        <div className="flex gap-2">
+                            <select
+                                className="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                value={emergencyPhonePrefix}
+                                onChange={(e) => setEmergencyPhonePrefix(e.target.value)}
+                            >
+                                {PHONE_PREFIXES.map(p => (
+                                    <option key={p.value} value={p.value}>{p.label}</option>
+                                ))}
+                            </select>
+                            <div className="flex-1">
+                                <Input id="emergencyPhone" placeholder="Opcional" error={errors.emergencyPhone?.message} {...register('emergencyPhone')} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

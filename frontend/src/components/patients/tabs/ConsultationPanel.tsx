@@ -4,6 +4,10 @@ import { supabase } from '@/lib/supabase';
 import { Loader2, Search } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { generateConsultationPDF } from '@/lib/pdfGenerator';
+import { Dialog, DialogContent, DialogFooter } from '@/components/ui/Dialog';
+import { CheckCircle2, FilePlus } from 'lucide-react';
+import pdfHeaderImg from '@/assets/pdf-header.png';
 
 interface ConsultationPanelProps {
     patientId: string;
@@ -38,6 +42,8 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [activeConsultation, setActiveConsultation] = useState<any>(null);
     const [constantCatalog, setConstantCatalog] = useState<Record<string, string>>({});
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+    const [generatedPdfName, setGeneratedPdfName] = useState('');
 
     // Diagnosis Search State
     const [diagnosisResults, setDiagnosisResults] = useState<any[]>([]);
@@ -183,7 +189,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
 
             const { data: practitioner, error: practError } = await supabase
                 .from('practitioners')
-                .select('id, fid')
+                .select('id, fid, first_name, last_name_1, license_number')
                 .eq('user_id', user.id)
                 .single();
 
@@ -191,7 +197,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
 
             const { data: patient, error: patError } = await supabase
                 .from('patients')
-                .select('portfolio_id, cip')
+                .select('portfolio_id, cip, first_name, last_name_1, last_name_2, dni, birth_date')
                 .eq('id', patientId)
                 .single();
             if (patError) throw new Error('Error al obtener datos del paciente');
@@ -297,6 +303,91 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                 if (vitalsError) {
                     console.error('Error saving vitals:', vitalsError);
                     toast.error('La consulta se guardó pero hubo un error con las constantes.');
+                }
+            }
+
+            // 4. Fetch Practitioner Signature
+            const { data: signatureDoc } = await (supabase
+                .from('practitioner_documents') as any)
+                .select('url')
+                .eq('practitioner_id', (practitioner as any).id)
+                .eq('category', 'signature_stamp')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            // 5. Generate & Save PDF
+            const pdfData = {
+                patient: {
+                    first_name: (patient as any).first_name,
+                    last_name_1: (patient as any).last_name_1,
+                    last_name_2: (patient as any).last_name_2,
+                    cip: (patient as any).cip,
+                    dni: (patient as any).dni,
+                    birth_date: (patient as any).birth_date
+                },
+                practitioner: {
+                    first_name: (practitioner as any).first_name,
+                    last_name_1: (practitioner as any).last_name_1,
+                    license_number: (practitioner as any).license_number
+                },
+                consultation: {
+                    motivo: data.motivo,
+                    exploracion: data.exploracion,
+                    tratamiento: data.tratamiento,
+                    aproximacion: data.aproximacion,
+                    diagnoses: data.selectedDiagnoses.map(d => ({ code: d.code, description: d.description })),
+                    date: consultation.scheduled_at
+                },
+                vitals: {
+                    weight: data.weight,
+                    height: data.height,
+                    systolic: data.systolic,
+                    diastolic: data.diastolic,
+                    heartRate: data.heartRate,
+                    temp: data.temp,
+                    satO2: data.satO2
+                },
+                headerImageUrl: pdfHeaderImg,
+                signatureUrl: signatureDoc?.url
+            };
+
+            const { blob, filename } = await generateConsultationPDF(pdfData);
+
+            // Upload to Supabase Storage
+            const filePath = `${patientId}/${Date.now()}_${filename}`;
+            const { error: uploadError } = await supabase.storage
+                .from('patient-documents')
+                .upload(filePath, blob);
+
+            if (uploadError) {
+                console.error('Error uploading PDF:', uploadError);
+                toast.error('Consulta guardada pero falló la creación del PDF en el servidor.');
+            } else {
+                // Get Public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('patient-documents')
+                    .getPublicUrl(filePath);
+
+                // Create record in patient_documents
+                const { error: docError } = await (supabase
+                    .from('patient_documents') as any)
+                    .insert({
+                        patient_id: patientId,
+                        name: filename,
+                        title: 'Informe de Consulta',
+                        document_type: 'consultation_report',
+                        url: publicUrl,
+                        type: 'pdf',
+                        category: 'consultation_report',
+                        practitioner_id: (practitioner as any).id
+                    });
+
+                if (docError) {
+                    console.error('Error recording document:', docError);
+                } else {
+                    setGeneratedPdfName(filename);
+                    setShowSuccessDialog(true);
                 }
             }
 
@@ -604,6 +695,41 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                     </fieldset>
                 </form>
             </div>
+
+            {/* Success Modal */}
+            <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <DialogContent className="sm:max-w-[500px] border-2 border-green-200">
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <div className="h-20 w-20 bg-green-50 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-300">
+                            <CheckCircle2 className="h-12 w-12 text-green-600" />
+                        </div>
+
+                        <h2 className="text-2xl font-black text-gray-900 mb-2">¡Consulta Guardada!</h2>
+                        <p className="text-gray-500 font-medium px-4">
+                            La información clínica se ha registrado correctamente y el documento administrativo se ha generado.
+                        </p>
+
+                        <div className="mt-8 w-full bg-gray-50 rounded-xl border border-gray-100 p-4 flex items-center gap-4">
+                            <div className="h-12 w-12 bg-white rounded-lg border border-gray-100 flex items-center justify-center shrink-0 shadow-sm">
+                                <FilePlus className="h-6 w-6 text-brand-600" />
+                            </div>
+                            <div className="text-left overflow-hidden">
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Documento Generado</p>
+                                <p className="text-sm font-bold text-gray-900 truncate">{generatedPdfName}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="sm:justify-center border-t border-gray-100 pt-6">
+                        <Button
+                            className="bg-brand-600 hover:bg-brand-700 text-white min-w-[200px] h-11"
+                            onClick={() => setShowSuccessDialog(false)}
+                        >
+                            Entendido
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
