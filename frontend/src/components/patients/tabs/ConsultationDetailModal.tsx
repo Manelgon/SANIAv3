@@ -30,7 +30,7 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
 
     // Check if consultation can be edited
     const { validation, loading: validationLoading } = useConsultationEditValidation(
-        isEditMode ? firstDiagnosisId : null,
+        firstDiagnosisId,
         currentPractitionerId
     );
 
@@ -55,13 +55,8 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
                     .eq('user_id', user.id)
                     .single();
                 if (practitioner) {
-                    console.log('DEBUG: Practitioner found', practitioner);
                     setCurrentPractitionerId((practitioner as { id: string }).id);
-                } else {
-                    console.log('DEBUG: No practitioner found for user', user.id);
                 }
-            } else {
-                console.log('DEBUG: No authenticated user found');
             }
         } catch (error) {
             console.error('Error fetching practitioner:', error);
@@ -100,14 +95,7 @@ export function ConsultationDetailModal({ isOpen, onClose, consultationId }: Con
 
             if (consError) throw consError;
 
-            const debugConsultation = consultation as any;
-            console.log('DEBUG: Consultation Loaded', {
-                id: debugConsultation.id,
-                status: debugConsultation.status,
-                diagnosesCount: debugConsultation.diagnoses?.length,
-                firstDiagnosis: debugConsultation.diagnoses?.[0],
-                diagnosesIDs: debugConsultation.diagnoses?.map((d: any) => d.id)
-            });
+
 
             // Force casting to our type, assuming the query matches the interface
             setData(consultation as unknown as ConsultationDetail);
