@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SanIA - Mis Pacientes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#15b290",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#11211e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 py-3 lg:px-20">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl font-bold">clinical_notes</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-black leading-tight tracking-tight">SanIA</h2>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary pb-1" href="#">Mis Pacientes</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors" href="#">Agenda</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors" href="#">Carteras</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors" href="#">Reportes</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-slate-900 dark:text-slate-100">Dr. Alejandro M.</p>
+<p class="text-[10px] text-slate-500">Medicina General</p>
+</div>
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30" data-alt="Doctor professional profile avatar">
+<span class="text-primary font-bold">AM</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 px-6 py-8 lg:px-20 max-w-[1440px] mx-auto w-full">
+<!-- Page Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div class="flex flex-col gap-1">
+<h1 class="text-slate-900 dark:text-slate-100 text-4xl font-black leading-tight tracking-tight">Mis Pacientes</h1>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal">Listado de pacientes asignados a tus carteras</p>
+</div>
+<div class="flex flex-wrap items-center gap-3">
+<div class="relative min-w-[300px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm transition-all shadow-sm" placeholder="Buscar por nombre, DNI o CIP..." type="text"/>
+</div>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-primary/20">
+<span class="material-symbols-outlined text-lg">person_add</span>
+<span>Nuevo Paciente</span>
+</button>
+</div>
+</div>
+<!-- Filters Row -->
+<div class="flex gap-3 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-6 text-sm font-bold transition-all shadow-sm">
+<span>Todos</span>
+<span class="bg-white/20 px-2 py-0.5 rounded-full text-[10px]">124</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary px-6 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all">
+<span class="material-symbols-outlined text-lg">calendar_today</span>
+<span>Con cita hoy</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-red-500 px-6 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all">
+<span class="material-symbols-outlined text-lg text-red-500">warning</span>
+<span>Alto riesgo</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary px-6 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all">
+<span class="material-symbols-outlined text-lg">history</span>
+<span>Recientes</span>
+</button>
+<button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary px-6 text-sm font-medium text-slate-600 dark:text-slate-400 transition-all">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+<span>Más filtros</span>
+</button>
+</div>
+<!-- Data Table Section -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Paciente</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Identificación</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Edad</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Cartera / Estado</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Última Consulta</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm" data-alt="Patient avatar circles with initials">JP</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Juan Pérez González</p>
+<p class="text-xs text-slate-500">Masculino</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1 font-mono text-xs text-slate-600 dark:text-slate-400">
+<span>DNI: 12345678X</span>
+<span>CIP: CIP001245</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">45 años</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-2">
+<span class="inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">General</span>
+<span class="inline-flex items-center self-start px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 uppercase tracking-tighter">Activo</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">12/10/2023</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined">arrow_forward_ios</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-sm" data-alt="Female patient avatar with initials">MG</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">María García Rivas</p>
+<p class="text-xs text-slate-500">Femenino</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1 font-mono text-xs text-slate-600 dark:text-slate-400">
+<span>DNI: 87654321Y</span>
+<span>CIP: CIP002890</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">32 años</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-2">
+<span class="inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">Crónicos</span>
+<span class="inline-flex items-center self-start px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 uppercase tracking-tighter">En Seguimiento</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">14/10/2023</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined">arrow_forward_ios</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm" data-alt="Elderly patient avatar initials">CR</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Carlos Ruiz Sánchez</p>
+<p class="text-xs text-slate-500">Masculino</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1 font-mono text-xs text-slate-600 dark:text-slate-400">
+<span>DNI: 11223344Z</span>
+<span>CIP: CIP003112</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">68 años</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-2">
+<span class="inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">Alto Riesgo</span>
+<span class="inline-flex items-center self-start px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 uppercase tracking-tighter">Crítico</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">15/10/2023</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined">arrow_forward_ios</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm" data-alt="Patient avatar circles with initials">AB</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-100">Ana Belén Torres</p>
+<p class="text-xs text-slate-500">Femenino</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1 font-mono text-xs text-slate-600 dark:text-slate-400">
+<span>DNI: 55667788K</span>
+<span>CIP: CIP004778</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-medium">29 años</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-2">
+<span class="inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">General</span>
+<span class="inline-flex items-center self-start px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 uppercase tracking-tighter">Activo</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">16/10/2023</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined">arrow_forward_ios</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+<p class="text-sm text-slate-500">Mostrando <span class="font-bold text-slate-900 dark:text-slate-100">1-4</span> de <span class="font-bold text-slate-900 dark:text-slate-100">124</span> pacientes</p>
+<div class="flex items-center gap-1">
+<button class="p-2 text-slate-400 hover:text-primary disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded-lg bg-primary text-white text-xs font-bold">1</button>
+<button class="size-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold">2</button>
+<button class="size-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold">3</button>
+<span class="px-2 text-slate-400">...</span>
+<button class="size-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold">31</button>
+<button class="p-2 text-slate-400 hover:text-primary">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Sticky Footer for context -->
+<footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-4 lg:px-20 text-center">
+<p class="text-xs text-slate-400">SanIA © 2024 - Sistema de Gestión Clínica Inteligente - <span class="text-primary font-medium hover:underline cursor-pointer">Soporte técnico</span></p>
+</footer>
+</div>
+</div>
+</body></html>

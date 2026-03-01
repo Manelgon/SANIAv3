@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  /* Brand scale (Agua Celestial) */
   --color-brand: #BDF7EB;
   --color-brand-50: #F2FDFA;
   --color-brand-100: #E6FCF6;
@@ -12,6 +13,12 @@
   --color-brand-700: #1A8271;
   --color-brand-800: #11574B;
   --color-brand-900: #092B26;
+
+  /* SanIA Semantic Design System */
+  --color-primary: #0f4d40;
+  --color-primary-light: #7ed8c8;
+  --color-primary-accent: #BDF7EB;
+  --color-bg-base: #f6f8f7;
 }
 
 @layer base {

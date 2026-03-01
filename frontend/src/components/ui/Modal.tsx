@@ -13,9 +13,11 @@ interface ModalProps {
     title: React.ReactNode;
     children: React.ReactNode;
     className?: string;
+    hideHeader?: boolean;
+    contentClassName?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, className, hideHeader = false, contentClassName }: ModalProps) {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
@@ -47,17 +49,19 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
                 "relative z-50 w-full max-w-lg rounded-lg bg-white p-6 shadow-lg animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[100dvh]",
                 className
             )}>
-                <div className="flex items-center justify-between mb-4 shrink-0">
-                    <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-                    <button
-                        onClick={onClose}
-                        className="rounded-full p-1 hover:bg-gray-100 transition-colors"
-                    >
-                        <X className="h-5 w-5 text-gray-500" />
-                    </button>
-                </div>
+                {!hideHeader && (
+                    <div className="flex items-center justify-between mb-4 shrink-0">
+                        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+                        <button
+                            onClick={onClose}
+                            className="rounded-full p-1 hover:bg-gray-100 transition-colors"
+                        >
+                            <X className="h-5 w-5 text-gray-500" />
+                        </button>
+                    </div>
+                )}
 
-                <div className="flex-1 overflow-y-auto min-h-0">
+                <div className={cn("flex-1 overflow-y-auto min-h-0", contentClassName)}>
                     {children}
                 </div>
             </div>

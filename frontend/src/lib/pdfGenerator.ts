@@ -2,6 +2,233 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 
+// ── IA Analysis PDF ────────────────────────────────────────────────────────────
+
+export interface IAAnalysisPDFData {
+    patient: {
+        first_name: string;
+        last_name_1: string;
+        last_name_2?: string;
+        cip: string;
+    };
+    practitioner: {
+        first_name: string;
+        last_name_1: string;
+        license_number?: string;
+    };
+    analyzedDocuments: {
+        title: string;
+        type: string;
+        created_at: string;
+    }[];
+    analysis: {
+        summary?: string;
+        findings?: { document: string; finding: string }[];
+        recommendations?: string[];
+        full_analysis?: string;
+        [key: string]: any;
+    };
+    generatedAt: string;
+}
+
+export async function generateIAAnalysisPDF(data: IAAnalysisPDFData): Promise<{ blob: Blob; filename: string }> {
+    const doc = new jsPDF() as any;
+    const { patient, practitioner, analyzedDocuments, analysis, generatedAt } = data;
+    const PAGE_W = 210;
+    const MARGIN = 20;
+    const CONTENT_W = PAGE_W - MARGIN * 2;
+    let y = 0;
+
+    const checkPage = (needed = 20) => {
+        if (y + needed > 272) { doc.addPage(); y = 20; }
+    };
+
+    // ── HEADER ──────────────────────────────────────────────────────
+    doc.setFillColor(15, 77, 63); // primary teal
+    doc.rect(0, 0, PAGE_W, 38, 'F');
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text('SanIA · Informe de Análisis IA', MARGIN, 18);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(189, 247, 235); // accent
+    doc.text('Documento generado automáticamente mediante inteligencia artificial', MARGIN, 27);
+    doc.text(`Generado el ${format(new Date(generatedAt), 'dd/MM/yyyy HH:mm')}`, MARGIN, 34);
+
+    y = 50;
+
+    // ── PATIENT & PRACTITIONER ───────────────────────────────────────
+    const drawSection = (title: string) => {
+        checkPage(14);
+        doc.setFillColor(237, 245, 243);
+        doc.rect(MARGIN, y - 5, CONTENT_W, 8, 'F');
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 77, 63);
+        doc.text(title.toUpperCase(), MARGIN + 3, y);
+        y += 8;
+    };
+
+    const drawRow = (label: string, value: string, x = MARGIN + 3, col2x?: number, label2?: string, value2?: string) => {
+        checkPage(8);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 116, 139);
+        doc.text(label, x, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 23, 42);
+        doc.text(value, x + 35, y);
+        if (col2x && label2 && value2) {
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100, 116, 139);
+            doc.text(label2, col2x, y);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text(value2, col2x + 35, y);
+        }
+        y += 7;
+    };
+
+    drawSection('Datos del Paciente');
+    drawRow('Paciente:', `${patient.first_name} ${patient.last_name_1} ${patient.last_name_2 || ''}`.trim(), MARGIN + 3, 120, 'CIP:', patient.cip);
+    y += 3;
+
+    drawSection('Responsable Clínico');
+    drawRow('Facultativo:', `${practitioner.first_name} ${practitioner.last_name_1}`, MARGIN + 3, 120, 'Nº Colegiado:', practitioner.license_number || '---');
+    y += 5;
+
+    // ── ANALYZED DOCUMENTS TABLE ─────────────────────────────────────
+    drawSection(`Documentos Analizados (${analyzedDocuments.length})`);
+    y += 2;
+
+    autoTable(doc, {
+        startY: y,
+        margin: { left: MARGIN, right: MARGIN },
+        head: [['Documento', 'Tipo', 'Fecha']],
+        body: analyzedDocuments.map(d => [
+            d.title,
+            d.type,
+            format(new Date(d.created_at), 'dd/MM/yyyy'),
+        ]),
+        theme: 'striped',
+        headStyles: {
+            fillColor: [15, 77, 63],
+            textColor: 255,
+            fontStyle: 'bold',
+            fontSize: 8,
+        },
+        bodyStyles: { fontSize: 8, textColor: [30, 41, 59] },
+        alternateRowStyles: { fillColor: [240, 253, 250] },
+        columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 50 }, 2: { cellWidth: 30 } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 10;
+
+    // ── ANALYSIS CONTENT ─────────────────────────────────────────────
+    const addTextBlock = (title: string, content: string) => {
+        checkPage(20);
+        drawSection(title);
+        y += 2;
+        doc.setFontSize(9.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(30, 41, 59);
+        const lines = doc.splitTextToSize(content || 'Sin datos', CONTENT_W - 6);
+        lines.forEach((line: string) => {
+            checkPage(7);
+            doc.text(line, MARGIN + 3, y);
+            y += 5.5;
+        });
+        y += 4;
+    };
+
+    if (analysis.summary) addTextBlock('Resumen del Análisis', analysis.summary);
+
+    if (analysis.findings && analysis.findings.length > 0) {
+        checkPage(20);
+        drawSection('Hallazgos por Documento');
+        y += 2;
+        analysis.findings.forEach((f: { document: string; finding: string }, i: number) => {
+            checkPage(18);
+            doc.setFontSize(8.5);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 77, 63);
+            doc.text(`${i + 1}. ${f.document}`, MARGIN + 3, y);
+            y += 5;
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(30, 41, 59);
+            const lines = doc.splitTextToSize(f.finding, CONTENT_W - 10);
+            lines.forEach((line: string) => {
+                checkPage(6);
+                doc.text(line, MARGIN + 6, y);
+                y += 5;
+            });
+            y += 3;
+        });
+    }
+
+    if (analysis.recommendations && analysis.recommendations.length > 0) {
+        checkPage(20);
+        drawSection('Recomendaciones');
+        y += 2;
+        analysis.recommendations.forEach((rec: string, i: number) => {
+            checkPage(8);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(30, 41, 59);
+            const lines = doc.splitTextToSize(`• ${rec}`, CONTENT_W - 6);
+            lines.forEach((line: string) => {
+                checkPage(6);
+                doc.text(line, MARGIN + 3, y);
+                y += 5.5;
+            });
+        });
+        y += 4;
+    }
+
+    if (analysis.full_analysis && !analysis.summary) {
+        addTextBlock('Análisis Completo', analysis.full_analysis);
+    }
+
+    // ── DISCLAIMER ───────────────────────────────────────────────────
+    checkPage(20);
+    y += 5;
+    doc.setFillColor(255, 251, 235);
+    doc.rect(MARGIN, y, CONTENT_W, 18, 'F');
+    doc.setDrawColor(217, 119, 6);
+    doc.rect(MARGIN, y, CONTENT_W, 18, 'S');
+    y += 6;
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(146, 64, 14);
+    doc.text('AVISO LEGAL', MARGIN + 4, y);
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(120, 80, 20);
+    doc.text('Este informe ha sido generado mediante inteligencia artificial y es de carácter orientativo.', MARGIN + 4, y);
+    y += 4;
+    doc.text('No sustituye el criterio clínico del facultativo ni tiene valor diagnóstico definitivo.', MARGIN + 4, y);
+
+    // ── FOOTER ───────────────────────────────────────────────────────
+    const pages = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7.5);
+        doc.setTextColor(160);
+        doc.text(`Página ${i} de ${pages}`, 105, 287, { align: 'center' });
+        doc.text('SanIA · Análisis IA', MARGIN, 287);
+        doc.text(format(new Date(generatedAt), 'dd/MM/yyyy HH:mm'), PAGE_W - MARGIN, 287, { align: 'right' });
+    }
+
+    const cleanCip = patient.cip.replace(/[^a-z0-9]/gi, '');
+    const dateStr = format(new Date(generatedAt), 'yyyy-MM-dd_HHmm');
+    return {
+        blob: doc.output('blob'),
+        filename: `IA_ANALYSIS_${cleanCip}_${dateStr}.pdf`,
+    };
+}
+
 export interface PDFData {
     patient: {
         first_name: string;

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carrusel 000.AUTOMATIZALO — Instagram</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Montserrat:wght@700;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --terracotta: #C45C26;
+      --terracotta-dark: #A84A1E;
+      --orange-red: #E74C3C;
+      --cream: #F8F4F0;
+      --cream-dark: #F0E8E0;
+      --yellow: #F1C40F;
+      --black: #000000;
+      --white: #FFFFFF;
+      --gray-badge: #2c2c2c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+    .slide {
+      width: 100%;
+      min-height: 100vh;
+      max-width: 1080px;
+      margin: 0 auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 40px;
+      aspect-ratio: 1 / 1;
+    }
+    .slide-bg-terracotta {
+      background: var(--terracotta);
+      background-image: radial-gradient(ellipse at 30% 20%, rgba(255,120,60,0.2), transparent 50%);
+    }
+    .slide-bg-cream {
+      background: var(--cream);
+      background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, #FAF6F2 0%, var(--cream) 100%);
+    }
+    .badge {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: var(--gray-badge);
+      color: var(--white);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+    }
+    .font-display { font-family: 'Montserrat', sans-serif; }
+    .font-script { font-family: 'Caveat', cursive; }
+    .text-impact { font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.1; text-align: center; }
+    .text-title-sm { font-size: clamp(1.25rem, 4vw, 1.75rem); font-weight: 700; text-transform: uppercase; }
+    .box-red { background: var(--orange-red); color: var(--white); padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 1rem; }
+    .flow-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 16px 0; }
+    .arrow-curve { width: 48px; height: 48px; color: var(--orange-red); }
+    .highlight { color: var(--orange-red); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+    .strikethrough { text-decoration: line-through; color: var(--orange-red); }
+  </style>
+</head>
+<body>
+
+  <!-- Slide 1/10 — Portada -->
+  <section class="slide slide-bg-terracotta" id="slide-1">
+    <span class="badge">1/10</span>
+    <p class="font-script" style="color: var(--white); font-size: clamp(1.5rem, 5vw, 2.25rem); margin-bottom: 8px;">Cómo hacer</p>
+    <h1 class="font-display text-impact" style="color: var(--yellow); text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+      AUTOMATIZACIÓN<br/>QUE VENDE
+    </h1>
+    <p class="font-display" style="color: var(--white); font-size: clamp(0.9rem, 2.5vw, 1.1rem); font-weight: 700; text-transform: uppercase; margin-top: 24px; letter-spacing: 0.05em;">
+      PARA TU NEGOCIO
+    </p>
+  </section>
+
+  <!-- Slide 2/10 — La fórmula -->
+  <section class="slide slide-bg-cream" id="slide-2">
+    <span class="badge">2/10</span>
+    <div style="text-align: center; max-width: 520px;">
+      <p style="color: var(--black); font-size: 1.15rem; margin-bottom: 4px;">Ésta es la</p>
+      <p class="font-script highlight" style="font-size: 1.75rem; display: inline;">nueva</p>
+      <p class="font-display text-title-sm" style="color: var(--orange-red); margin: 8px 0;">FORMULA</p>
+      <p style="color: var(--black); font-size: 1.15rem;">para</p>
+      <p class="font-display text-title-sm" style="color: var(--orange-red);">AUTOMATIZAR</p>
+      <p class="font-display text-title-sm" style="color: var(--orange-red);">tu negocio.</p>
+    </div>
+  </section>
+
+  <!-- Slide 3/10 — La estructura -->
+  <section class="slide slide-bg-cream" id="slide-3">
+    <span class="badge">3/10</span>
+    <p class="font-display text-title-sm" style="color: var(--black); margin-bottom: 16px;">La estructura</p>
+    <div class="flow-row">
+      <span class="box-red">captación</span>
+      <span class="box-red">valor</span>
+      <span class="box-red">CTA</span>
+    </div>
+    <p class="font-display text-impact" style="color: var(--orange-red); font-size: clamp(2rem, 6vw, 3.5rem); margin: 24px 0;">SÍ FUNCIONA</p>
+    <p style="color: var(--black); font-size: 0.95rem; font-weight: 600;">(por la siguiente razón)</p>
+  </section>
+
+  <!-- Slide 4/10 — El problema -->
+  <section class="slide slide-bg-cream" id="slide-4">
+    <span class="badge">4/10</span>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); margin-bottom: 20px;">EL PROBLEMA</p>
+    <div style="text-align: left; max-width: 480px;">
+      <p style="color: var(--black); font-size: 1.1rem;">La gente hace todo</p>
+      <p class="font-script highlight" style="font-size: 1.35rem;">directamente</p>
+      <p style="color: var(--black); font-size: 1.1rem;">a mano. <strong>Sin escalar.</strong></p>
+      <p style="color: var(--black); font-size: 0.9rem; margin-top: 8px;">(demasiado lento)</p>
+      <p style="color: var(--black); font-size: 1.1rem; margin-top: 16px;">Y esto <span class="highlight">penaliza</span></p>
+      <p style="color: var(--black); font-size: 1.1rem; font-weight: 700;">tu crecimiento.</p>
+    </div>
+  </section>
+
+  <!-- Slide 5/10 — Por qué -->
+  <section class="slide slide-bg-cream" id="slide-5">
+    <span class="badge">5/10</span>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); margin-bottom: 20px;">POR QUÉ?</p>
+    <div style="text-align: left; max-width: 480px;">
+      <p style="color: var(--black); font-size: 1.1rem;">El valor llega</p>
+      <p class="font-script" style="color: var(--orange-red); font-size: 1.5rem; text-shadow: 1px 1px 0 var(--white);">demasiado tarde.</p>
+      <p style="color: var(--black); font-size: 1.1rem; margin-top: 16px;">Y nadie está listo para <span class="strikethrough">escucharle</span> <span class="highlight">valorarlo</span> como se merece.</p>
+    </div>
+  </section>
+
+  <!-- Slide 6/10 — Qué hacer -->
+  <section class="slide slide-bg-terracotta" id="slide-6">
+    <span class="badge">6/10</span>
+    <p class="font-display" style="color: var(--black); font-size: clamp(1rem, 3vw, 1.25rem); font-weight: 700; text-align: left; max-width: 400px;">
+      Esto es lo que<br/>tienes que
+    </p>
+    <h2 class="font-display text-impact" style="color: var(--white); text-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-top: 8px;">
+      AUTOMATIZAR
+    </h2>
+  </section>
+
+  <!-- Slide 7/10 — Añadir necesidad -->
+  <section class="slide slide-bg-cream" id="slide-7">
+    <span class="badge">7/10</span>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); margin-bottom: 8px;">AÑADIR</p>
+    <p style="color: var(--black); font-weight: 700; font-size: 1.1rem;">una parte más</p>
+    <p style="color: var(--black); font-weight: 700; font-size: 1.1rem;">a la estructura</p>
+    <div class="flow-row" style="margin: 20px 0;">
+      <span class="box-red">gancho</span>
+      <span class="box-red" style="outline: 3px solid var(--white); outline-offset: 2px;">necesidad</span>
+      <span class="box-red">valor</span>
+      <span class="box-red">CTA</span>
+    </div>
+    <p style="color: var(--black); font-weight: 700;">y crear <span class="font-script highlight" style="font-size: 1.3rem;">necesidad</span> por escuchar el <span class="highlight">valor.</span></p>
+  </section>
+
+  <!-- Slide 8/10 — La necesidad -->
+  <section class="slide slide-bg-cream" id="slide-8">
+    <span class="badge">8/10</span>
+    <div style="text-align: center; max-width: 520px;">
+      <p style="color: var(--black); font-size: 1.1rem;">La</p>
+      <p class="font-display text-title-sm" style="color: var(--orange-red); font-size: clamp(1.75rem, 5vw, 2.5rem);">NECESIDAD</p>
+      <p style="color: var(--black); font-size: 1.1rem;">es lo que aumentará la</p>
+      <p class="font-script highlight" style="font-size: 1.4rem;">retención</p>
+      <p style="color: var(--black); font-size: 1.1rem;">y hará que tu negocio se</p>
+      <p class="font-display text-title-sm" style="color: var(--orange-red); font-size: clamp(1.5rem, 4vw, 2rem); margin-top: 8px;">ESCALE.</p>
+    </div>
+  </section>
+
+  <!-- Slide 9/10 — Fórmula numerada -->
+  <section class="slide slide-bg-cream" id="slide-9">
+    <span class="badge">9/10</span>
+    <p style="color: var(--black); font-weight: 700; font-size: 1.05rem;">Ésta es la nueva <span class="font-script highlight" style="font-size: 1.3rem;">fórmula</span> de</p>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); font-size: clamp(1.5rem, 4vw, 2.25rem); margin-bottom: 20px;">AUTOMATIZACIÓN VIRAL</p>
+    <div style="background: var(--orange-red); border-radius: 12px; padding: 20px 24px; max-width: 400px;">
+      <div style="background: var(--white); color: var(--black); padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; font-weight: 700;">1. Gancho <span style="font-weight: 400; font-size: 0.9rem;">(3-5s)</span></div>
+      <div style="background: var(--white); color: var(--black); padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; font-weight: 700;">2. Necesidad <span style="font-weight: 400; font-size: 0.9rem;">(15-30s)</span></div>
+      <div style="background: var(--white); color: var(--black); padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; font-weight: 700;">3. Valor <span style="font-weight: 400; font-size: 0.9rem;">(15-30s)</span></div>
+      <div style="background: var(--white); color: var(--black); padding: 12px 16px; border-radius: 8px; font-weight: 700;">4. CTA <span style="font-weight: 400; font-size: 0.9rem;">(5-10s)</span></div>
+    </div>
+    <p style="color: var(--black); font-size: 0.95rem; margin-top: 16px;">(la que uso en todos mis flujos)</p>
+  </section>
+
+  <!-- Slide 10/10 — CTA final -->
+  <section class="slide slide-bg-terracotta" id="slide-10">
+    <span class="badge">10/10</span>
+    <div style="text-align: center;">
+      <p style="color: var(--black); font-size: clamp(1.1rem, 3.5vw, 1.4rem); font-weight: 700;">Comenta</p>
+      <p class="font-display text-impact" style="color: var(--white); font-size: clamp(2.5rem, 8vw, 4.5rem); margin: 8px 0;">"AUTOMATIZA"</p>
+      <p style="color: var(--black); font-size: clamp(1.1rem, 3.5vw, 1.4rem); font-weight: 700;">y te envío</p>
+      <p style="color: var(--black); font-size: clamp(1.1rem, 3.5vw, 1.4rem); font-weight: 700;">toda la info.</p>
+    </div>
+    <p style="position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); color: var(--black); font-size: 0.95rem; font-weight: 600;">@automatizalo</p>
+  </section>
+
+</body>
+</html>

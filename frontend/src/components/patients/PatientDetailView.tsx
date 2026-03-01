@@ -4,7 +4,9 @@ import { ConsultationHistory } from './tabs/ConsultationHistory';
 import { DiagnosesTab } from './tabs/DiagnosesTab';
 import { DocumentsTab } from './tabs/DocumentsTab';
 import { ClinicalDataTab } from './tabs/ClinicalDataTab';
-import { ArrowLeft, User, ClipboardList, Info, Calendar, Phone, Activity, Venus, Mars, AlertTriangle, Zap, Apple, History as HistoryIcon, FileText, Droplet, HeartPulse } from 'lucide-react';
+import { GeneralOverviewTab } from './tabs/GeneralOverviewTab';
+import { EditPatientModal } from './EditPatientModal';
+import { ArrowLeft, ClipboardList, Info, Calendar, Activity, AlertTriangle, Zap, Apple, FileText, LayoutDashboard, Phone, Pencil } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
@@ -24,9 +26,11 @@ interface PatientDetailViewProps {
 
 export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
     const [searchParams, setSearchParams] = useSearchParams();
-    const activeTab = searchParams.get('tab') || 'consulta';
+    const activeTab = searchParams.get('tab') || 'general';
     const [allergies, setAllergies] = useState<any[]>([]);
     const [lastConsultation, setLastConsultation] = useState<string | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [localPatient, setLocalPatient] = useState(patient);
 
     useEffect(() => {
         const fetchClinicalSummary = async () => {
@@ -61,17 +65,35 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
         fetchClinicalSummary();
     }, [patient.id]);
 
+    // Refresh patient data after edit
+    const handlePatientUpdated = async () => {
+        setIsEditModalOpen(false);
+        const { data } = await supabase
+            .from('patients')
+            .select(`*, portfolio:portfolios(name)`)
+            .eq('id', localPatient.id)
+            .maybeSingle();
+        if (data) {
+            setLocalPatient({ ...data, portfolio_name: (data.portfolio as any)?.name });
+        }
+        const { data: allergiesData } = await supabase
+            .from('patient_allergies')
+            .select(`id, status, notes, allergy:allergies_list(description)`)
+            .eq('patient_id', localPatient.id);
+        setAllergies(allergiesData || []);
+    };
+
     const setActiveTab = (tabId: string) => {
         setSearchParams({ tab: tabId }, { replace: true });
     };
 
     const tabs = [
+        { id: 'general', label: 'Resumen General', icon: LayoutDashboard },
         { id: 'consulta', label: 'Consulta', icon: Activity },
         { id: 'historial', label: 'Historial de Consultas', icon: Calendar },
-        { id: 'clinicos', label: 'Datos Clínicos', icon: HeartPulse },
         { id: 'diagnosticos', label: 'Diagnósticos', icon: ClipboardList },
         { id: 'documentos', label: 'Documentos', icon: FileText },
-        { id: 'informacion', label: 'Información General', icon: Info },
+        { id: 'informacion', label: 'Ficha del Paciente', icon: Info },
     ];
 
     const calculateAge = (birthDate: string) => {
@@ -103,110 +125,70 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            {/* Header / Navigation */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-                <div className="flex items-center gap-4 min-w-0">
-                    <Button variant="ghost" size="sm" onClick={onBack} className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors shrink-0">
-                        <ArrowLeft className="h-5 w-5 text-gray-600" />
-                    </Button>
-                    <div className="flex items-center gap-3 min-w-0">
-                        <div
-                            className="min-w-0 truncate relative cursor-pointer"
-                            onClick={() => toggleTooltip('patient-info')}
-                        >
-                            <h1 className="text-xl font-bold text-gray-900 leading-tight truncate hover:text-brand-600 transition-colors">
-                                {patient.last_name_1} {patient.last_name_2}, {patient.first_name}
-                            </h1>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
-                                <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-mono text-gray-600 uppercase tracking-tight whitespace-nowrap">
+        <>
+        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            {/* Patient Profile Header — estilo Stitch */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+
+                    {/* Left: Avatar + Info */}
+                    <div className="flex items-start gap-4">
+                        <Button variant="ghost" size="sm" onClick={onBack} className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 transition-colors shrink-0 mt-1">
+                            <ArrowLeft className="h-5 w-5 text-gray-600" />
+                        </Button>
+                        {/* Avatar circle */}
+                        <div className="relative shrink-0">
+                            <div className="size-16 rounded-xl bg-brand-600 text-white flex items-center justify-center font-black text-xl select-none">
+                                {`${patient.last_name_1?.charAt(0) ?? ''}${patient.first_name?.charAt(0) ?? ''}`.toUpperCase()}
+                            </div>
+                            <div className="absolute -bottom-1.5 -right-1.5 size-6 bg-brand-600 rounded-md flex items-center justify-center shadow">
+                                <Activity className="h-3.5 w-3.5 text-white" />
+                            </div>
+                        </div>
+                        {/* Name + meta */}
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                                <h1 className="text-2xl font-bold text-slate-900 leading-tight">
+                                    {patient.first_name} {patient.last_name_1} {patient.last_name_2}
+                                </h1>
+                                <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-[11px] font-bold font-mono text-slate-600 whitespace-nowrap">
                                     CIP: {patient.cip || 'S/N'}
                                 </span>
-                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest whitespace-nowrap hidden sm:inline-block">Ficha del Paciente</span>
                             </div>
-
-                            {/* Patient Info Tooltip */}
-                            <div className={cn(
-                                "absolute top-full left-0 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all text-left",
-                                activeTooltip === 'patient-info' ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
-                            )}>
-                                <span className="block text-[10px] font-black text-brand-600 uppercase mb-2 tracking-widest">Información del Paciente</span>
-                                <div className="space-y-1">
-                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">Nombre:</strong> {patient.first_name} {patient.last_name_1} {patient.last_name_2}</p>
-                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">DNI:</strong> {patient.dni}</p>
-                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">CIP:</strong> {patient.cip || 'S/N'}</p>
-                                    <p className="text-xs text-gray-800"><strong className="text-gray-500">Edad:</strong> {calculateAge(patient.birth_date)} años</p>
-                                </div>
-                                <div className="absolute -top-1.5 left-4 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
-                            </div>
+                            <p className="text-sm text-slate-500 font-medium mb-2">
+                                {calculateAge(patient.birth_date)} años
+                                {patient.gender && ` · ${patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1)}`}
+                                {patient.blood_group && ` · ${patient.blood_group}`}
+                                {lastConsultation && ` · Última visita: ${format(new Date(lastConsultation), "dd MMM yyyy", { locale: es })}`}
+                            </p>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-4 text-sm pt-2 lg:pt-0 border-t lg:border-t-0 border-gray-100 w-full lg:w-auto justify-between lg:justify-end">
-                    {/* Hover Stats */}
-                    <div className="flex items-center gap-2 border-r pr-4 border-gray-100 h-10">
-                        {/* Antecedentes Hover */}
+                    {/* Right: clinical quick-access tooltips */}
+                    <div className="flex items-center gap-2 shrink-0 self-center">
+                        {/* Antecedentes */}
                         <div className="group relative">
-                            <div
-                                onClick={() => toggleTooltip('background')}
-                                className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors cursor-help"
-                            >
+                            <div onClick={() => toggleTooltip('background')} className="p-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors cursor-help">
                                 <Zap className="h-4 w-4" />
                             </div>
-                            <div className={cn(
-                                "absolute top-full left-0 lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
-                                activeTooltip === 'background' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
-                            )}>
+                            <div className={cn("absolute top-full right-0 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all", activeTooltip === 'background' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none")}>
                                 <span className="block text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Antecedentes Médicos</span>
-                                <p className="text-xs text-gray-600 leading-relaxed italic">
-                                    {patient.background || 'No se han registrado antecedentes de interés.'}
-                                </p>
-                                <div className="absolute -top-1.5 left-3 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <p className="text-xs text-gray-600 leading-relaxed italic">{patient.background || 'No se han registrado antecedentes de interés.'}</p>
+                                <div className="absolute -top-1.5 right-4 w-3 h-3 bg-white border-t border-r border-gray-200 rotate-45"></div>
                             </div>
                         </div>
-
-                        {/* Hábitos Hover */}
+                        {/* Hábitos */}
                         <div className="group relative">
-                            <div
-                                onClick={() => toggleTooltip('habits')}
-                                className="p-2 bg-green-50 text-green-600 rounded-lg border border-green-100 hover:bg-green-100 transition-colors cursor-help"
-                            >
+                            <div onClick={() => toggleTooltip('habits')} className="p-2 bg-green-50 text-green-600 rounded-lg border border-green-100 hover:bg-green-100 transition-colors cursor-help">
                                 <Apple className="h-4 w-4" />
                             </div>
-                            <div className={cn(
-                                "absolute top-full left-[-2.5rem] lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all",
-                                activeTooltip === 'habits' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
-                            )}>
+                            <div className={cn("absolute top-full right-0 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all", activeTooltip === 'habits' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none")}>
                                 <span className="block text-[10px] font-black text-green-600 uppercase mb-2 tracking-widest">Hábitos de Vida</span>
-                                <p className="text-xs text-gray-600 leading-relaxed italic">
-                                    {patient.habits || 'No se han registrado hábitos particulares.'}
-                                </p>
-                                <div className="absolute -top-1.5 left-12 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <p className="text-xs text-gray-600 leading-relaxed italic">{patient.habits || 'No se han registrado hábitos particulares.'}</p>
+                                <div className="absolute -top-1.5 right-4 w-3 h-3 bg-white border-t border-r border-gray-200 rotate-45"></div>
                             </div>
                         </div>
-
-                        {/* Blood Group Hover */}
-                        <div className="group relative">
-                            <div
-                                onClick={() => toggleTooltip('bloodGroup')}
-                                className="p-2 bg-pink-50 text-pink-600 rounded-lg border border-pink-100 hover:bg-pink-100 transition-colors cursor-help"
-                            >
-                                <Droplet className="h-4 w-4" />
-                            </div>
-                            <div className={cn(
-                                "absolute top-full left-[-3.5rem] lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 transition-all text-center",
-                                activeTooltip === 'bloodGroup' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
-                            )}>
-                                <span className="block text-[10px] font-black text-pink-600 uppercase mb-2 tracking-widest">Grupo Sanguíneo</span>
-                                <p className="text-xl font-black text-gray-800">
-                                    {patient.blood_group || 'N/A'}
-                                </p>
-                                <div className="absolute -top-1.5 left-16 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
-                            </div>
-                        </div>
-
-                        {/* Alergias Hover */}
+                        {/* Alergias */}
                         <div className="group relative">
                             <div
                                 onClick={() => toggleTooltip('allergies')}
@@ -214,14 +196,12 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                     "p-2 rounded-lg border transition-colors cursor-help",
                                     allergies.length > 0
                                         ? "bg-red-50 text-red-600 border-red-100 hover:bg-red-100"
-                                        : "bg-gray-50 text-gray-400 border-gray-100 hover:bg-gray-100 font-bold"
-                                )}>
+                                        : "bg-gray-50 text-gray-400 border-gray-100 hover:bg-gray-100"
+                                )}
+                            >
                                 <AlertTriangle className="h-4 w-4" />
                             </div>
-                            <div className={cn(
-                                "absolute top-full left-[-5rem] lg:left-1/2 lg:-translate-x-1/2 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 text-left transition-all",
-                                activeTooltip === 'allergies' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none"
-                            )}>
+                            <div className={cn("absolute top-full right-0 mt-2 w-64 p-3 bg-white rounded-xl shadow-xl border border-gray-200 z-50 text-left transition-all", activeTooltip === 'allergies' ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none")}>
                                 <span className="block text-[10px] font-black text-red-600 uppercase mb-2 tracking-widest">Alergias Conocidas</span>
                                 {allergies.length > 0 ? (
                                     <ul className="space-y-1.5">
@@ -236,77 +216,47 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                         ))}
                                     </ul>
                                 ) : (
-                                    <p className="text-xs text-gray-500 italic">No se han registrado alergias para este paciente.</p>
+                                    <p className="text-xs text-gray-500 italic">No se han registrado alergias.</p>
                                 )}
-                                <div className="absolute -top-1.5 left-20 lg:left-1/2 lg:-translate-x-1/2 w-3 h-3 bg-white border-t border-l border-gray-200 rotate-45"></div>
+                                <div className="absolute -top-1.5 right-4 w-3 h-3 bg-white border-t border-r border-gray-200 rotate-45"></div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="hidden sm:flex flex-col items-end border-r pr-4 border-gray-100">
-                        <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">Última Consulta</span>
-                        <div className="flex items-center gap-1.5">
-                            <HistoryIcon className="h-3 w-3 text-brand-500" />
-                            <span className="text-gray-900 font-black text-sm text-right">
-                                {lastConsultation ? format(new Date(lastConsultation), 'dd/MM/yyyy', { locale: es }) : "S/N"}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col items-end">
-                        <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider text-right">Edad y Género</span>
-                        <div className="flex items-center gap-2">
-                            {patient.gender === 'hombre' ? (
-                                <Mars className="h-5 w-5 text-blue-500" />
-                            ) : patient.gender === 'mujer' ? (
-                                <Venus className="h-5 w-5 text-pink-500" />
-                            ) : (
-                                <User className="h-5 w-5 text-gray-400" />
-                            )}
-                            <span className="text-gray-900 font-black text-xl leading-none">{calculateAge(patient.birth_date)} años</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Content Tabs */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-[60vh]">
-                <div className="flex border-b border-gray-100 bg-gray-50/30 overflow-x-auto scrollbar-hide">
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all relative border-r border-gray-100 last:border-r-0 whitespace-nowrap ${activeTab === tab.id
-                                    ? 'text-brand-600 bg-white'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                    }`}
-                            >
-                                <Icon className={`h-4 w-4 ${activeTab === tab.id ? 'text-brand-500' : 'text-gray-400'}`} />
-                                {tab.label}
-                                {activeTab === tab.id && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-500" />
-                                )}
-                            </button>
-                        );
-                    })}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col min-h-[60vh]">
+                <div className="flex items-end gap-6 border-b border-slate-200 px-6 overflow-x-auto scrollbar-hide">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`pb-3 pt-4 text-xs font-bold tracking-widest uppercase transition-all relative whitespace-nowrap border-b-4 ${
+                                activeTab === tab.id
+                                    ? 'border-brand-500 text-brand-600'
+                                    : 'border-transparent text-slate-400 hover:text-brand-600 hover:border-brand-200'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
 
-                <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+                <div className="flex-1 flex flex-col min-h-0 relative">
+                    {/* TAB: Resumen General */}
+                    <div className={cn("flex-1 overflow-auto", activeTab !== 'general' && "hidden")}>
+                        <GeneralOverviewTab patient={patient} onSwitchTab={setActiveTab} />
+                    </div>
+
                     {/* TAB: Registro Clínico */}
-                    <div className={cn("flex-1 flex flex-col min-h-0 overflow-hidden", activeTab !== 'consulta' && "hidden")}>
+                    <div className={cn("flex-1 flex flex-col min-h-0", activeTab !== 'consulta' && "hidden")}>
                         <ConsultationPanel patientId={patient.id} />
                     </div>
 
                     {/* TAB: Historial */}
                     <div className={cn("flex-1 overflow-auto", activeTab !== 'historial' && "hidden")}>
                         <ConsultationHistory patientId={patient.id} />
-                    </div>
-
-                    {/* TAB: Datos Clínicos */}
-                    <div className={cn("flex-1 overflow-auto", activeTab !== 'clinicos' && "hidden")}>
-                        <ClinicalDataTab patientId={patient.id} />
                     </div>
 
                     {/* TAB: Diagnósticos */}
@@ -322,6 +272,21 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                     {/* TAB: Información General */}
                     <div className={cn("p-8 flex-1 flex flex-col overflow-auto", activeTab !== 'informacion' && "hidden")}>
                         <div className="w-full space-y-6 animate-in fade-in zoom-in-95 duration-300 text-left">
+
+                            {/* Toolbar */}
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-base font-bold text-slate-900">Ficha del Paciente</h2>
+                                    <p className="text-xs text-slate-400 mt-0.5">Datos de identificación, contacto y clínicos del paciente</p>
+                                </div>
+                                <button
+                                    onClick={() => setIsEditModalOpen(true)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-brand-700 transition-colors"
+                                >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                    Editar datos del paciente
+                                </button>
+                            </div>
                             <div className="grid grid-cols-12 gap-6">
                                 {/* LEFT: Administrative & Identification */}
                                 <div className="col-span-12 lg:col-span-8 space-y-6">
@@ -334,27 +299,27 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                                                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                                                     <span className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Teléfono Principal</span>
-                                                    <span className="text-sm font-bold text-gray-900">{patient.phone || '---'}</span>
+                                                    <span className="text-sm font-bold text-gray-900">{localPatient.phone || '---'}</span>
                                                 </div>
                                                 <div className="p-3 bg-red-50 rounded-lg border border-red-100">
                                                     <span className="text-[9px] text-red-500 uppercase font-bold block mb-1">Emergencias</span>
-                                                    <span className="text-sm font-bold text-red-900">{patient.emergency_phone || '---'}</span>
+                                                    <span className="text-sm font-bold text-red-900">{localPatient.emergency_phone || '---'}</span>
                                                 </div>
                                                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                                                     <span className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Dirección</span>
-                                                    <span className="text-sm font-semibold text-gray-900 leading-tight block truncate" title={patient.address?.street}>
-                                                        {patient.address?.street || 'No especificada'}
+                                                    <span className="text-sm font-semibold text-gray-900 leading-tight block truncate" title={localPatient.address?.street}>
+                                                        {localPatient.address?.street || 'No especificada'}
                                                     </span>
                                                 </div>
                                                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                                                     <span className="text-[9px] text-gray-500 uppercase font-bold block mb-1">Localidad</span>
-                                                    <span className="text-sm font-bold text-gray-900 block truncate capitalize" title={patient.locality || patient.address?.locality}>
-                                                        {patient.locality || patient.address?.locality || '---'}
+                                                    <span className="text-sm font-bold text-gray-900 block truncate capitalize" title={localPatient.locality || localPatient.address?.locality}>
+                                                        {localPatient.locality || localPatient.address?.locality || '---'}
                                                     </span>
                                                 </div>
                                                 <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                                                     <span className="text-[9px] text-gray-400 font-bold uppercase block mb-1">Provincia / Región</span>
-                                                    <span className="text-sm font-bold text-gray-900 block truncate capitalize">{patient.address?.province || 'No especificada'}</span>
+                                                    <span className="text-sm font-bold text-gray-900 block truncate capitalize">{localPatient.address?.province || 'No especificada'}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -369,62 +334,24 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                         <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 text-center lg:text-left">
                                             <div className="p-3 bg-red-50/30 rounded-lg border border-red-50">
                                                 <span className="block text-[9px] text-red-500 font-black uppercase mb-1">G. Sanguíneo</span>
-                                                <span className="text-xl font-black text-red-600 leading-none">{patient.blood_group || '---'}</span>
+                                                <span className="text-xl font-black text-red-600 leading-none">{localPatient.blood_group || '---'}</span>
                                             </div>
                                             <div className="p-3 bg-brand-50/30 rounded-lg border border-brand-50">
                                                 <span className="block text-[9px] text-brand-500 font-black uppercase mb-1">Altura</span>
-                                                <span className="text-lg font-black text-brand-700 leading-none">{patient.height ? `${patient.height} cm` : '---'}</span>
+                                                <span className="text-lg font-black text-brand-700 leading-none">{localPatient.height ? `${localPatient.height} cm` : '---'}</span>
                                             </div>
                                             <div className="p-3 bg-brand-50/30 rounded-lg border border-brand-50">
                                                 <span className="block text-[9px] text-brand-500 font-black uppercase mb-1">Peso</span>
-                                                <span className="text-lg font-black text-brand-700 leading-none">{patient.weight ? `${patient.weight} kg` : '---'}</span>
+                                                <span className="text-lg font-black text-brand-700 leading-none">{localPatient.weight ? `${localPatient.weight} kg` : '---'}</span>
                                             </div>
                                             <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                                                 <span className="block text-[9px] text-gray-400 font-black uppercase mb-1">IMC Calc.</span>
-                                                <span className="text-lg font-black text-gray-900 leading-none">{calculateIMC(patient.weight, patient.height)}</span>
+                                                <span className="text-lg font-black text-gray-900 leading-none">{calculateIMC(localPatient.weight, localPatient.height)}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                                        <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
-                                            <ClipboardList className="h-4 w-4 text-gray-400" />
-                                            <h4 className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Notas Administrativas</h4>
-                                        </div>
-                                        <div className="p-5 space-y-4">
-                                            {/* Allergies Section */}
-                                            <div className="space-y-1">
-                                                <span className="block text-[10px] text-red-500 font-black uppercase">Alergias Conocidas</span>
-                                                {allergies.length > 0 ? (
-                                                    <div className="flex flex-wrap gap-2 bg-red-50/50 p-3 rounded-lg border border-red-100">
-                                                        {allergies.map((a: any) => (
-                                                            <div key={a.id} className="inline-flex items-center gap-1.5 bg-white border border-red-200 text-red-700 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm">
-                                                                <AlertTriangle className="h-3 w-3" />
-                                                                <span>{(a.allergy as any)?.description}</span>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-xs text-gray-500 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100 italic">
-                                                        No se han registrado alergias.
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="space-y-1">
-                                                <span className="block text-[10px] text-blue-500 font-black uppercase">Antecedentes</span>
-                                                <p className="text-xs text-blue-900 leading-relaxed bg-blue-50/50 p-3 rounded-lg border border-blue-100 italic">
-                                                    {patient.background || 'No se han registrado antecedentes de interés.'}
-                                                </p>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="block text-[10px] text-green-500 font-black uppercase">Hábitos de Vida</span>
-                                                <p className="text-xs text-green-900 leading-relaxed bg-green-50/50 p-3 rounded-lg border border-green-100 italic">
-                                                    {patient.habits || 'No se han registrado hábitos particulares.'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <ClinicalDataTab patientId={localPatient.id} />
                                 </div>
 
                                 {/* RIGHT: Location & Notes */}
@@ -438,44 +365,44 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                                             <div>
                                                 <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nombre Completo</span>
                                                 <span className="text-xs font-bold text-gray-900 block leading-tight">
-                                                    {patient.first_name} {patient.last_name_1} {patient.last_name_2}
+                                                    {localPatient.first_name} {localPatient.last_name_1} {localPatient.last_name_2}
                                                 </span>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">DNI / Pasaporte</span>
-                                                    <span className="text-xs font-bold text-gray-900 block">{patient.dni}</span>
+                                                    <span className="text-xs font-bold text-gray-900 block">{localPatient.dni}</span>
                                                 </div>
                                                 <div>
                                                     <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">CIP</span>
-                                                    <span className="text-xs font-black text-brand-600 block">{patient.cip || 'N/A'}</span>
+                                                    <span className="text-xs font-black text-brand-600 block">{localPatient.cip || 'N/A'}</span>
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">FID Relacionado</span>
-                                                    <span className="text-xs font-bold text-brand-600 block">{patient.portfolio_name || 'Particular'}</span>
+                                                    <span className="text-xs font-bold text-brand-600 block">{localPatient.portfolio_name || 'Particular'}</span>
                                                 </div>
                                                 <div>
                                                     <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nº Afiliación</span>
-                                                    <span className="text-xs font-bold text-gray-900 block">{patient.insured_number || 'N/A'}</span>
+                                                    <span className="text-xs font-bold text-gray-900 block">{localPatient.insured_number || 'N/A'}</span>
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Nacimiento</span>
                                                     <span className="text-[11px] font-bold text-gray-900 block">
-                                                        {format(new Date(patient.birth_date), "dd/MM/yyyy")}
+                                                        {format(new Date(localPatient.birth_date), "dd/MM/yyyy")}
                                                     </span>
                                                 </div>
                                                 <div>
                                                     <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Género</span>
-                                                    <span className="text-xs font-bold text-gray-900 block capitalize">{patient.gender || '---'}</span>
+                                                    <span className="text-xs font-bold text-gray-900 block capitalize">{localPatient.gender || '---'}</span>
                                                 </div>
                                             </div>
                                             <div>
                                                 <span className="block text-[10px] text-gray-400 font-bold uppercase mb-1">Email</span>
-                                                <span className="text-xs font-bold text-gray-900 block truncate" title={patient.email}>{patient.email || 'N/A'}</span>
+                                                <span className="text-xs font-bold text-gray-900 block truncate" title={localPatient.email}>{localPatient.email || 'N/A'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -487,5 +414,14 @@ export function PatientDetailView({ patient, onBack }: PatientDetailViewProps) {
                 </div>
             </div>
         </div>
+
+        {/* Edit Patient Modal */}
+        <EditPatientModal
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onSaved={handlePatientUpdated}
+            patient={localPatient}
+        />
+        </>
     );
 }

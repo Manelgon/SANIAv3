@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f4d3f",
+                        "accent": "#BDF7EB",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#12201d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<title>SanIA - Detalle de Consulta</title>
+</head>
+<body class="bg-slate-200/50 flex items-center justify-center min-h-screen p-4">
+<!-- Modal Container -->
+<div class="bg-background-light dark:bg-background-dark w-full max-w-[860px] rounded-xl shadow-2xl overflow-hidden flex flex-col border border-primary/10">
+<!-- Header -->
+<header class="px-6 py-4 border-b border-primary/10 flex items-center justify-between bg-white dark:bg-background-dark">
+<div class="flex items-center gap-4">
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined block text-2xl">medical_information</span>
+</div>
+<div>
+<h1 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight">Detalle de Consulta</h1>
+<p class="text-slate-500 text-sm font-medium">22 de febrero 2026</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200 uppercase tracking-wider">Cerrada</span>
+<button class="text-slate-400 hover:text-slate-600 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</header>
+<!-- Patient Banner -->
+<div class="px-6 py-4 bg-slate-50 border-b border-primary/5 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+                    MM
+                </div>
+<div>
+<h2 class="text-slate-900 font-bold text-base">Manuel Méndez González</h2>
+<p class="text-slate-500 text-xs font-medium">CIP: MEGO0000009021992 • Varón, 34 años</p>
+</div>
+</div>
+<div class="flex items-center gap-3 border-l border-slate-200 pl-6">
+<div class="text-right">
+<p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Médico Asignado</p>
+<p class="text-slate-700 text-sm font-semibold">Dr. Julian Castro</p>
+</div>
+<div class="size-10 rounded-full bg-accent/30 border border-primary/10 overflow-hidden">
+<img alt="Doctor profile photo" class="w-full h-full object-cover" data-alt="Professional portrait of a male doctor in a white coat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5Z_VskB4nVThv8_-7Dz6VE7sEW1HB3jjZMxfFeV7pOgwY3JTtEf4sbnYXI8AM2dJK3_ZrAEB3BvH20M96b5ru1P14s5x3qQz-5D8TC1wdUgL_wOj0_dt2n8r6e7HxKeHoEzuIsNB1bvb4pTJgu9XrKAFWBhzeubj7LFkzf5NKyhV7nXgsEBcS3YadVKoR43oLgfRG7OQ4J7jlovEVjTXoBvJF94CZSLD4I8G-gH9PAaRQ3En4TMqZIosmYRabjHNhw7O_sdZq9cU"/>
+</div>
+</div>
+</div>
+<!-- Main Content (Two Columns) -->
+<div class="p-6 grid grid-cols-3 gap-6 overflow-y-auto max-h-[70vh]">
+<!-- Left Column (2/3) -->
+<div class="col-span-2 space-y-6">
+<!-- Diagnósticos CIE-10 -->
+<section>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-xl">label</span>
+<h3 class="text-slate-900 font-bold text-sm uppercase tracking-wide">Diagnósticos CIE-10</h3>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
+<div class="flex items-center gap-3">
+<span class="bg-primary/10 text-primary font-bold text-xs px-2 py-1 rounded">A59.03</span>
+<span class="text-slate-700 text-sm font-medium">Tricomoniasis urogenital</span>
+</div>
+<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100 uppercase">Confirmado</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
+<div class="flex items-center gap-3">
+<span class="bg-primary/10 text-primary font-bold text-xs px-2 py-1 rounded">J09-J18</span>
+<span class="text-slate-700 text-sm font-medium">Influenza y neumonía</span>
+</div>
+<span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-100 uppercase">Confirmado</span>
+</div>
+</div>
+</section>
+<!-- Motivo de Consulta -->
+<section>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">psychiatry</span>
+<h3 class="text-slate-900 font-bold text-sm uppercase tracking-wide">Motivo de Consulta</h3>
+</div>
+<div class="p-4 bg-white border border-slate-200 rounded-lg">
+<p class="text-slate-600 text-sm leading-relaxed">Control y seguimiento del paciente tras tratamiento antibiótico previo. Refiere mejoría general pero persiste leve cansancio.</p>
+</div>
+</section>
+<!-- Exploración / Hallazgos -->
+<section>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">stethoscope</span>
+<h3 class="text-slate-900 font-bold text-sm uppercase tracking-wide">Exploración / Hallazgos</h3>
+</div>
+<div class="p-4 bg-white border border-slate-200 rounded-lg">
+<p class="text-slate-600 text-sm leading-relaxed">Auscultación cardiopulmonar normal. Ruidos cardíacos rítmicos sin soplos. Murmullo vesicular conservado. Abdomen blando y deprensible, no doloroso a la palpación profunda. No se palpan masas ni megalias.</p>
+</div>
+</section>
+<!-- Plan de Tratamiento -->
+<section>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">medication</span>
+<h3 class="text-slate-900 font-bold text-sm uppercase tracking-wide">Plan de Tratamiento</h3>
+</div>
+<div class="p-4 bg-accent/10 border border-accent/30 rounded-lg">
+<p class="text-slate-700 text-sm font-medium leading-relaxed">Metronidazol 500mg vía oral cada 12 horas durante 7 días. Hidratación abundante. Reposo relativo durante las primeras 48h. Cita de revisión en 15 días.</p>
+</div>
+</section>
+</div>
+<!-- Right Column (1/3) -->
+<div class="col-span-1 space-y-6">
+<!-- Constantes / Biometría -->
+<section>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary text-xl">monitoring</span>
+<h3 class="text-slate-900 font-bold text-sm uppercase tracking-wide">Constantes</h3>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-white border border-slate-200 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+<span class="text-[10px] text-slate-400 font-bold uppercase">Peso</span>
+<span class="text-slate-900 font-bold text-lg">80 <span class="text-xs font-normal text-slate-500">kg</span></span>
+</div>
+<div class="bg-white border border-slate-200 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+<span class="text-[10px] text-slate-400 font-bold uppercase">Tensión</span>
+<span class="text-slate-900 font-bold text-lg">120/80</span>
+</div>
+<div class="bg-white border border-slate-200 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+<span class="text-[10px] text-slate-400 font-bold uppercase">FC</span>
+<span class="text-slate-900 font-bold text-lg">72 <span class="text-xs font-normal text-slate-500">bpm</span></span>
+</div>
+<div class="bg-white border border-slate-200 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+<span class="text-[10px] text-slate-400 font-bold uppercase">SpO2</span>
+<span class="text-slate-900 font-bold text-lg">98 <span class="text-xs font-normal text-slate-500">%</span></span>
+</div>
+</div>
+</section>
+<!-- Notas Clínicas -->
+<section>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">sticky_note_2</span>
+<h3 class="text-slate-900 font-bold text-sm uppercase tracking-wide">Notas Clínicas</h3>
+</div>
+<div class="p-4 bg-amber-50 border border-amber-200 rounded-lg min-h-[160px]">
+<p class="text-amber-800 text-xs italic leading-relaxed">Paciente cooperador. Se ha explicado la importancia de completar el ciclo de tratamiento aunque los síntomas desaparezcan. Se entrega material informativo sobre prevención.</p>
+</div>
+</section>
+<!-- Documentos -->
+<section>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-xl">attach_file</span>
+<h3 class="text-slate-900 font-bold text-sm uppercase tracking-wide">Adjuntos (2)</h3>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-3 p-2 border border-slate-200 rounded bg-white">
+<span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
+<span class="text-xs text-slate-600 truncate font-medium">Analitica_Febrero.pdf</span>
+</div>
+<div class="flex items-center gap-3 p-2 border border-slate-200 rounded bg-white">
+<span class="material-symbols-outlined text-blue-500">image</span>
+<span class="text-xs text-slate-600 truncate font-medium">Rx_Torax_Lateral.jpg</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Footer Actions -->
+<footer class="px-6 py-4 border-t border-primary/10 bg-slate-50 flex items-center justify-between">
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-bold text-sm bg-white hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-lg">print</span>
+                    Imprimir
+                </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-bold text-sm bg-white hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined text-lg">share</span>
+                    Exportar
+                </button>
+</div>
+<button class="px-8 py-2 bg-primary text-white rounded-lg font-bold text-sm hover:bg-primary/90 transition-all shadow-md">
+                Cerrar
+            </button>
+</footer>
+</div>
+</body></html>

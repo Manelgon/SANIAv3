@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Carrusel PYMES — Muchos Excels, poca trazabilidad | 000.AUTOMATIZALO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Montserrat:wght@700;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --terracotta: #C45C26;
+      --orange-red: #E74C3C;
+      --cream: #F8F4F0;
+      --yellow: #F1C40F;
+      --black: #000000;
+      --white: #FFFFFF;
+      --gray-badge: #2c2c2c;
+      --gray-dot: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+    .slide {
+      width: 100%;
+      min-height: 100vh;
+      max-width: 1080px;
+      margin: 0 auto;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 40px 72px;
+      aspect-ratio: 1 / 1;
+    }
+    /* Terracotta con textura de puntos (cuadrícula sutil) */
+    .slide-bg-terracotta {
+      background: var(--terracotta);
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.12) 1px, transparent 0);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 0;
+    }
+    .slide-bg-cream {
+      background: var(--cream);
+      background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, #FAF6F2 0%, var(--cream) 100%);
+    }
+    .badge {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: var(--gray-badge);
+      color: var(--white);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+    }
+    .pagination {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pagination-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gray-dot);
+    }
+    .pagination-dot.active {
+      width: 28px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--yellow);
+    }
+    .font-display { font-family: 'Montserrat', sans-serif; }
+    .font-script { font-family: 'Caveat', cursive; }
+    .text-impact { font-size: clamp(2rem, 7vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.15; text-align: center; }
+    .text-title-sm { font-size: clamp(1.2rem, 4vw, 1.65rem); font-weight: 700; text-transform: uppercase; }
+    .box-red { background: var(--orange-red); color: var(--white); padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 1rem; }
+    .flow-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 16px 0; }
+    .highlight { color: var(--orange-red); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+    .strikethrough { text-decoration: line-through; color: var(--orange-red); }
+  </style>
+</head>
+<body>
+
+  <!-- 1/10 — Portada -->
+  <section class="slide slide-bg-terracotta" id="slide-1">
+    <span class="badge">1/10</span>
+    <h1 class="font-display text-impact" style="color: var(--yellow); text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+      ¿MUCHOS<br/>EXCELS?
+    </h1>
+    <p class="font-display text-title-sm" style="color: var(--white); margin-top: 24px; letter-spacing: 0.04em;">
+      POCA TRAZABILIDAD
+    </p>
+    <p style="color: var(--black); font-size: clamp(0.95rem, 2.5vw, 1.1rem); font-weight: 700; margin-top: 16px;">
+      Para PYMES que quieren orden
+    </p>
+    <div class="pagination">
+      <span class="pagination-dot active"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+      <span class="pagination-dot"></span>
+    </div>
+  </section>
+
+  <!-- 2/10 — El problema -->
+  <section class="slide slide-bg-cream" id="slide-2">
+    <span class="badge">2/10</span>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); margin-bottom: 20px;">ÉSTE ES EL PROBLEMA</p>
+    <div style="text-align: center; max-width: 480px;">
+      <p style="color: var(--black); font-size: 1.15rem; line-height: 1.5;">Tus datos están en <strong>mil Excels</strong>.</p>
+      <p style="color: var(--black); font-size: 1.15rem; line-height: 1.5; margin-top: 12px;">Y nadie sabe <span class="highlight">qué es verdad</span>.</p>
+    </div>
+  </section>
+
+  <!-- 3/10 — Estructura que no funciona -->
+  <section class="slide slide-bg-cream" id="slide-3">
+    <span class="badge">3/10</span>
+    <p class="font-display text-title-sm" style="color: var(--black); margin-bottom: 16px;">La estructura de siempre</p>
+    <div class="flow-row">
+      <span class="box-red">Excel aquí</span>
+      <span class="box-red">Excel allá</span>
+      <span class="box-red">copia-pega</span>
+    </div>
+    <p class="font-display text-impact" style="color: var(--orange-red); font-size: clamp(1.75rem, 5vw, 3rem); margin: 24px 0;">NO FUNCIONA</p>
+    <p style="color: var(--black); font-size: 0.95rem; font-weight: 600;">(y te quema tiempo y recursos)</p>
+  </section>
+
+  <!-- 4/10 — Consecuencia -->
+  <section class="slide slide-bg-cream" id="slide-4">
+    <span class="badge">4/10</span>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); margin-bottom: 20px;">LO QUE PASA</p>
+    <div style="text-align: left; max-width: 480px;">
+      <p style="color: var(--black); font-size: 1.1rem;">La información pasa de un Excel</p>
+      <p class="font-script highlight" style="font-size: 1.35rem;">a otro… y a otro.</p>
+      <p style="color: var(--black); font-size: 1.1rem; margin-top: 12px;">Errores. Lentitud.</p>
+      <p style="color: var(--black); font-size: 1.1rem; font-weight: 700;">Cero <span class="highlight">trazabilidad</span>.</p>
+    </div>
+  </section>
+
+  <!-- 5/10 — Por qué -->
+  <section class="slide slide-bg-cream" id="slide-5">
+    <span class="badge">5/10</span>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); margin-bottom: 20px;">POR QUÉ?</p>
+    <div style="text-align: center; max-width: 480px;">
+      <p style="color: var(--black); font-size: 1.15rem;">Porque nadie sabe</p>
+      <p class="font-script highlight" style="font-size: 1.6rem;">qué versión es la buena.</p>
+    </div>
+  </section>
+
+  <!-- 6/10 — Qué hacer -->
+  <section class="slide slide-bg-terracotta" id="slide-6">
+    <span class="badge">6/10</span>
+    <p class="font-display" style="color: var(--black); font-size: clamp(1rem, 3vw, 1.2rem); font-weight: 700; text-align: center; max-width: 400px;">
+      Esto es lo que<br/>tienes que
+    </p>
+    <h2 class="font-display text-impact" style="color: var(--white); text-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-top: 8px;">
+      HACER
+    </h2>
+    <p style="color: var(--black); font-size: clamp(0.95rem, 2.5vw, 1.05rem); font-weight: 700; margin-top: 20px;">Unificar. Trazar. Controlar.</p>
+  </section>
+
+  <!-- 7/10 — La solución (partes) -->
+  <section class="slide slide-bg-cream" id="slide-7">
+    <span class="badge">7/10</span>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); margin-bottom: 12px;">AÑADIR ESTO</p>
+    <p style="color: var(--black); font-weight: 700; font-size: 1.1rem;">a tu forma de trabajar:</p>
+    <div class="flow-row" style="margin: 24px 0;">
+      <span class="box-red">Una sola fuente</span>
+      <span class="box-red">Un solo dato</span>
+      <span class="box-red">Todo trazado</span>
+    </div>
+    <p style="color: var(--black); font-size: 1rem;">y dejar de perder <span class="highlight">tiempo y datos</span>.</p>
+  </section>
+
+  <!-- 8/10 — La trazabilidad -->
+  <section class="slide slide-bg-cream" id="slide-8">
+    <span class="badge">8/10</span>
+    <div style="text-align: center; max-width: 520px;">
+      <p style="color: var(--black); font-size: 1.1rem;">La</p>
+      <p class="font-display text-title-sm" style="color: var(--orange-red); font-size: clamp(1.75rem, 5vw, 2.5rem);">TRAZABILIDAD</p>
+      <p style="color: var(--black); font-size: 1.1rem;">es lo que te da <span class="highlight">control</span></p>
+      <p style="color: var(--black); font-size: 1.1rem;">y hace que tu negocio se</p>
+      <p class="font-display text-title-sm" style="color: var(--orange-red); font-size: clamp(1.5rem, 4vw, 2rem); margin-top: 8px;">ESCALE.</p>
+    </div>
+  </section>
+
+  <!-- 9/10 — La fórmula -->
+  <section class="slide slide-bg-cream" id="slide-9">
+    <span class="badge">9/10</span>
+    <p style="color: var(--black); font-weight: 700; font-size: 1.05rem;">La fórmula para dejar atrás los Excels:</p>
+    <p class="font-display text-title-sm" style="color: var(--orange-red); font-size: clamp(1.25rem, 3.5vw, 1.6rem); margin-bottom: 20px;">UNA SOLA FUENTE DE VERDAD</p>
+    <div style="background: var(--orange-red); border-radius: 12px; padding: 20px 24px; max-width: 380px;">
+      <div style="background: var(--white); color: var(--black); padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; font-weight: 700;">1. Una sola fuente</div>
+      <div style="background: var(--white); color: var(--black); padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; font-weight: 700;">2. Un solo dato (sin duplicados)</div>
+      <div style="background: var(--white); color: var(--black); padding: 12px 16px; border-radius: 8px; font-weight: 700;">3. Todo trazado</div>
+    </div>
+    <p style="color: var(--black); font-size: 0.95rem; margin-top: 16px;">(la que usan las PYMES que escalan)</p>
+  </section>
+
+  <!-- 10/10 — CTA -->
+  <section class="slide slide-bg-terracotta" id="slide-10">
+    <span class="badge">10/10</span>
+    <div style="text-align: center;">
+      <p style="color: var(--black); font-size: clamp(1.1rem, 3.5vw, 1.35rem); font-weight: 700;">Comenta</p>
+      <p class="font-display text-impact" style="color: var(--white); font-size: clamp(2.25rem, 7vw, 4rem); margin: 8px 0;">"TRAZABILIDAD"</p>
+      <p style="color: var(--black); font-size: clamp(1.1rem, 3.5vw, 1.35rem); font-weight: 700;">y te envío la guía</p>
+      <p style="color: var(--black); font-size: clamp(1rem, 3vw, 1.2rem); font-weight: 700;">para dejar atrás el caos de Excels.</p>
+    </div>
+    <p style="position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); color: var(--black); font-size: 1rem; font-weight: 700;">@automatizalo</p>
+  </section>
+
+</body>
+</html>

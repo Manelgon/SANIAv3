@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import LoginPage from '@/pages/Login';
 import PortalPage from '@/pages/Portal';
@@ -13,6 +14,17 @@ import PatientsPage from '@/pages/admin/Patients';
 import PractitionersPage from '@/pages/admin/Practitioners';
 import PractitionerProfilePage from '@/pages/PractitionerProfile';
 import { PractitionerDetailView } from '@/components/users/PractitionerDetailView';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,    // datos frescos durante 2min — sin spinner al cambiar de tab
+      gcTime: 10 * 60 * 1000,     // mantiene en caché 10min aunque no se use
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode, allowedRoles?: string[] }) {
   const { session, role, isLoading } = useAuthStore();
@@ -42,6 +54,7 @@ function App() {
   }, [initializeAuth]);
 
   return (
+    <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -101,6 +114,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 

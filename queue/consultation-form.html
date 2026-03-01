@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SanIA - Nueva Consulta</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f4d3f",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#12201d",
+                        "accent-green": "#BDF7EB",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-display">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-primary/10 px-6 py-3">
+<div class="max-w-[1400px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-primary text-white p-1.5 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">medical_services</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">SanIA</h1>
+</div>
+<div class="hidden md:flex items-center bg-primary/5 rounded-xl px-3 py-1.5 border border-primary/10">
+<span class="material-symbols-outlined text-primary/60 mr-2 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 placeholder:text-primary/40" placeholder="Buscar pacientes..." type="text"/>
+</div>
+</div>
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-sm font-semibold text-slate-500 hover:text-primary transition-colors" href="#">PACIENTES</a>
+<a class="text-sm font-bold text-primary border-b-2 border-primary pb-1" href="#">CONSULTA</a>
+<a class="text-sm font-semibold text-slate-500 hover:text-primary transition-colors" href="#">AGENDA</a>
+<a class="text-sm font-semibold text-slate-500 hover:text-primary transition-colors" href="#">INFORMES</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm">
+<span class="material-symbols-outlined text-sm">save</span>
+                    GUARDAR CONSULTA
+                </button>
+<div class="h-10 w-10 rounded-full border-2 border-primary/20 p-0.5">
+<img alt="User Profile" class="w-full h-full rounded-full object-cover" data-alt="Portrait of a medical professional" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcWc55iMA5dlJxs0b4HTbsIxWU_-Ncc69tV-DPOaqUsP4hOh0MEMsSWm-oVEIURffkb7Jlp-WQXjL65bnORJfWgrcHJukIOJusnI4NZbhMuyCjkIXZqMm728nWvY-A5AHhh_nTgAARQw2s5aldFls9j1NnovE3WzRqODo0sEIWdbGL6f_QP2FbWP_NZNm2_0Hkf18NePrWUdlot6_VUJlpHTG40c5wB9nBwTy_F3RZzou1u4MwxZ5dTmZZAXQeMYr3fGJuHrwTvSw"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-[1400px] mx-auto p-6">
+<!-- Breadcrumbs & Header -->
+<div class="flex flex-col gap-1 mb-6">
+<div class="flex items-center gap-2 text-sm text-slate-500 mb-2">
+<span class="hover:text-primary cursor-pointer">Inicio</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary font-medium">Nueva Consulta</span>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<h2 class="text-3xl font-extrabold text-slate-900 dark:text-white">REGISTRO CLÍNICO</h2>
+<p class="text-slate-500 font-medium">Lunes, 16 de febrero de 2026</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-colors">DESCARTAR</button>
+<button class="px-4 py-2 bg-slate-100 rounded-xl text-slate-900 font-semibold text-sm hover:bg-slate-200 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">print</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Form Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Left Column (60% / 7 cols) -->
+<div class="col-span-12 lg:col-span-7 space-y-6">
+<!-- Diagnosis Card -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">clinical_notes</span>
+                            DIAGNÓSTICO (CIE-10)
+                        </h3>
+</div>
+<div class="relative mb-6">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 text-sm" placeholder="Buscar código o descripción CIE-10..." type="text"/>
+</div>
+<div class="space-y-3">
+<!-- Diagnosis Item 1 (Confirmed) -->
+<div class="flex items-center justify-between p-3 bg-accent-green/20 border border-accent-green/40 rounded-xl">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<div>
+<p class="text-sm font-bold text-primary">J09-J18 GRIPE Y NEUMONÍA</p>
+<p class="text-xs text-primary/70">Confirmado · Principal</p>
+</div>
+</div>
+<button class="text-primary/40 hover:text-primary">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Diagnosis Item 2 (Pending) -->
+<div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">pending</span>
+<div>
+<p class="text-sm font-bold text-slate-700">N30.0 CISTITIS AGUDA</p>
+<p class="text-xs text-slate-500">Pendiente de estudio</p>
+</div>
+</div>
+<button class="text-slate-300 hover:text-slate-500">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Textarea Sections -->
+<div class="space-y-4">
+<!-- Section 1 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm">
+<h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Motivo de consulta</h3>
+<textarea class="w-full min-h-[100px] bg-slate-50 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 text-sm resize-none" placeholder="Describa el síntoma o motivo principal..."></textarea>
+</div>
+<!-- Section 2 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm">
+<h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Exploración física</h3>
+<textarea class="w-full min-h-[100px] bg-slate-50 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 text-sm resize-none" placeholder="Hallazgos de la exploración física..."></textarea>
+</div>
+<!-- Section 3 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm">
+<h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Aproximación diagnóstica</h3>
+<textarea class="w-full min-h-[100px] bg-slate-50 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 text-sm resize-none" placeholder="Juicio clínico y diagnósticos diferenciales..."></textarea>
+</div>
+<!-- Section 4 -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm">
+<h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Tratamiento y Plan</h3>
+<textarea class="w-full min-h-[120px] bg-slate-50 border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 text-sm resize-none" placeholder="Prescripciones, derivaciones y recomendaciones..."></textarea>
+</div>
+</div>
+</div>
+<!-- Right Column (40% / 5 cols) -->
+<div class="col-span-12 lg:col-span-5 space-y-6">
+<!-- Vital Signs Card -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">monitor_heart</span>
+                            CONSTANTES VITALES
+                        </h3>
+<span class="text-xs font-medium text-primary bg-primary/5 px-2 py-1 rounded-full">Última toma: 09:15</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 px-1">Tensión (S/D)</label>
+<div class="flex gap-2">
+<input class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-center text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20" placeholder="120" type="text"/>
+<span class="self-center text-slate-300">/</span>
+<input class="w-full bg-slate-50 border-none rounded-xl p-2.5 text-center text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20" placeholder="80" type="text"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 px-1">Frec. Cardíaca</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border-none rounded-xl p-2.5 pr-10 text-center text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20" placeholder="72" type="text"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">LPM</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 px-1">SatO2 (%)</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border-none rounded-xl p-2.5 pr-8 text-center text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20" placeholder="98" type="text"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">%</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 px-1">Temp. (ºC)</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border-none rounded-xl p-2.5 pr-8 text-center text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20" placeholder="36.5" type="text"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">ºC</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 px-1">Peso (Kg)</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border-none rounded-xl p-2.5 pr-10 text-center text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20" placeholder="70.5" type="text"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">Kg</span>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-xs font-semibold text-slate-500 px-1">Altura (cm)</label>
+<div class="relative">
+<input class="w-full bg-slate-50 border-none rounded-xl p-2.5 pr-10 text-center text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20" placeholder="175" type="text"/>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
+</div>
+</div>
+</div>
+<div class="mt-6 p-4 bg-primary/5 rounded-xl border border-primary/10">
+<div class="flex items-center justify-between text-sm">
+<span class="text-slate-600 font-medium">IMC Calculado</span>
+<span class="font-bold text-primary">23.0 (Normal)</span>
+</div>
+<div class="w-full h-1.5 bg-slate-200 rounded-full mt-2 overflow-hidden">
+<div class="w-[60%] h-full bg-green-500"></div>
+</div>
+</div>
+</div>
+<!-- Admin Notes Card -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary/10 shadow-sm opacity-80">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-500">sticky_note_2</span>
+                            NOTAS ADMINISTRATIVAS
+                        </h3>
+<span class="text-[10px] uppercase font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100">Próximamente</span>
+</div>
+<textarea class="w-full min-h-[100px] bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm resize-none cursor-not-allowed italic text-slate-400" disabled="" placeholder="Función disponible en la siguiente actualización..."></textarea>
+</div>
+<!-- Patient Summary Tooltip-like Card -->
+<div class="bg-primary p-6 rounded-xl text-white shadow-lg overflow-hidden relative">
+<div class="relative z-10">
+<div class="flex items-center gap-4 mb-4">
+<div class="h-12 w-12 rounded-full border-2 border-white/20 p-0.5">
+<img alt="Patient" class="w-full h-full rounded-full object-cover" data-alt="Portrait of the female patient" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAamp0jH63sGGRVUazvmDrbr4y9PXhleFLFwKOoGP84HgoCsCrMm6U_ln2uw48DLS14oS2Vps9ThFAidGEo85ypt4Uox8cWiCY5KPrnEldRfxb3sUyWEL6JhVmyLWF3XK87ZXBZoFhdVyH0NJuT2l-P29tHbjSgmIJGG-nCq_B4U8gnUsidqG_XwXlORTop4Fm5crXrf0pOb7_DVXj-TkQZw5rKhuo6a8togDSW7iWvLQgV9wIyWWodEaZQtONp9dobmfaMfRSp9wU"/>
+</div>
+<div>
+<h4 class="font-bold leading-tight">García López, María</h4>
+<p class="text-xs text-white/70">45 años · Mujer · ID: 882910</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 text-xs">
+<div class="bg-white/10 p-2 rounded-lg">
+<p class="text-white/60 mb-1">Alergias</p>
+<p class="font-bold text-rose-300">Penicilina</p>
+</div>
+<div class="bg-white/10 p-2 rounded-lg">
+<p class="text-white/60 mb-1">Antecedentes</p>
+<p class="font-bold">HTA, Asma</p>
+</div>
+</div>
+</div>
+<!-- Abstract Background Pattern -->
+<div class="absolute -right-10 -bottom-10 opacity-10">
+<span class="material-symbols-outlined text-9xl">health_and_safety</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Action Bar (Mobile only or sticky desktop) -->
+<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 p-4 lg:hidden">
+<button class="w-full bg-primary text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">save</span>
+            GUARDAR REGISTRO
+        </button>
+</div>
+</body></html>

@@ -1,4 +1,3 @@
-
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -8,7 +7,7 @@ import { Select } from '@/components/ui/Select';
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { X } from 'lucide-react';
+import { X, FolderOpen, Lock, UserCircle, MapPin, Activity } from 'lucide-react';
 import { SearchableSelect } from '../ui/SearchableSelect';
 import { PHONE_PREFIXES, splitPhone } from '@/lib/constants';
 
@@ -561,20 +560,29 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
         }
     };
 
-    return (
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6 p-1">
+    const inputClass = "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all disabled:opacity-50";
+    const labelClass = "block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5";
 
-            {/* 0. Datos del Facultativo (Top Section) */}
-            <div className="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <h3 className="text-lg font-medium text-brand-600 border-b pb-2">Asignación de Facultativo</h3>
-                <div className={`grid grid-cols-1 md:grid-cols-2 gap-4`}>
+    return (
+        <form
+            onSubmit={handleSubmit(onSubmit as any)}
+            className="space-y-5 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-5"
+        >
+
+            {/* 0. Asignación */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 lg:col-span-2">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="size-9 rounded-lg bg-brand-600/10 flex items-center justify-center text-brand-600 shrink-0">
+                        <FolderOpen className="h-4 w-4" />
+                    </div>
+                    <h3 className="text-sm font-bold text-brand-600 uppercase tracking-wider">Asignación de Facultativo</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {currentUserRole === 'super_admin' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Facultativo Responsable <span className="text-red-500">*</span>
-                            </label>
+                            <label className={labelClass}>Facultativo Responsable <span className="text-red-500">*</span></label>
                             <select
-                                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-70 disabled:bg-gray-100 disabled:text-gray-500"
+                                className={inputClass}
                                 value={selectedPractitionerId || ''}
                                 onChange={(e) => setSelectedPractitionerId(e.target.value)}
                             >
@@ -587,13 +595,10 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
                             </select>
                         </div>
                     )}
-
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Cartera de Pacientes (Portfolio) <span className="text-red-500">*</span>
-                        </label>
+                        <label className={labelClass}>Cartera de Pacientes (Portfolio) <span className="text-red-500">*</span></label>
                         <select
-                            className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-50 disabled:bg-gray-100"
+                            className={inputClass}
                             value={selectedPortfolioId || ''}
                             onChange={(e) => setSelectedPortfolioId(e.target.value)}
                             disabled={!selectedPractitionerId || (isEdit && currentUserRole !== 'super_admin' && currentUserRole !== 'practitioner')}
@@ -609,106 +614,113 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
                 </div>
             </div>
 
-
             {/* 1. Datos de Acceso */}
             {!isEdit && (
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Datos de Acceso</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input id="email" label="Email" type="email" required error={errors.email?.message} {...register('email')} />
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 lg:col-span-1">
+                    <div className="flex items-center gap-2 mb-4">
+                        <div className="size-9 rounded-lg bg-brand-600/10 flex items-center justify-center text-brand-600 shrink-0">
+                            <Lock className="h-4 w-4" />
+                        </div>
+                        <h3 className="text-sm font-bold text-brand-600 uppercase tracking-wider">Datos de Acceso</h3>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input id="password" label="Contraseña" type="password" required error={errors.password?.message} {...register('password')} />
-                        <Input id="confirmPassword" label="Confirmar Contraseña" type="password" required error={errors.confirmPassword?.message} {...register('confirmPassword')} />
+                        <Input id="email" label="Email" type="email" required error={errors.email?.message} {...register('email')} className={inputClass} />
+                        <div className="space-y-1.5">
+                            <label className={labelClass}>Contraseña <span className="text-red-500">*</span></label>
+                            <input type="password" {...register('password')} className={inputClass} placeholder="••••••••" />
+                            {errors.password?.message && <p className="text-xs text-red-500">{errors.password.message}</p>}
+                        </div>
+                        <div className="md:col-span-2 space-y-1.5">
+                            <label className={labelClass}>Confirmar Contraseña <span className="text-red-500">*</span></label>
+                            <input type="password" {...register('confirmPassword')} className={inputClass} placeholder="••••••••" />
+                            {errors.confirmPassword?.message && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* 2. Datos Personales */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Datos Personales</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input id="firstName" label="Nombre" required error={errors.firstName?.message} {...register('firstName')} disabled={isEdit && currentUserRole !== 'super_admin'} />
-                    <Input id="lastName1" label="Primer Apellido" required error={errors.lastName1?.message} {...register('lastName1')} disabled={isEdit && currentUserRole !== 'super_admin'} />
-                    <Input id="lastName2" label="Segundo Apellido" required error={errors.lastName2?.message} {...register('lastName2')} disabled={isEdit && currentUserRole !== 'super_admin'} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input id="dni" label="DNI/NIF" placeholder="12345678X" required error={errors.dni?.message} {...register('dni')} disabled={isEdit && currentUserRole !== 'super_admin'} />
-                    <Input id="birthDate" label="Fecha de Nacimiento" type="date" required error={errors.birthDate?.message} {...register('birthDate')} disabled={isEdit && currentUserRole !== 'super_admin'} />
-                </div>
-                {/* Phone Fields */}
-                {/* Phone Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Teléfono <span className="text-red-500">*</span></label>
-                        <div className="flex gap-2">
-                            <select
-                                className="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500"
-                                value={phonePrefix}
-                                onChange={(e) => setPhonePrefix(e.target.value)}
-                            >
-                                {PHONE_PREFIXES.map(p => (
-                                    <option key={p.value} value={p.value}>{p.label}</option>
-                                ))}
-                            </select>
-                            <div className="flex-1">
-                                <Input id="phone" placeholder="600000000" error={errors.phone?.message} {...register('phone')} />
-                            </div>
-                        </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 lg:col-span-1">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="size-9 rounded-lg bg-brand-600/10 flex items-center justify-center text-brand-600 shrink-0">
+                        <UserCircle className="h-4 w-4" />
                     </div>
-                    <div className="space-y-1">
-                        <label className="block text-sm font-medium text-gray-700">Teléfono Emergencias</label>
+                    <h3 className="text-sm font-bold text-brand-600 uppercase tracking-wider">Datos Personales</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input id="firstName" label="Nombre" required error={errors.firstName?.message} {...register('firstName')} disabled={isEdit && currentUserRole !== 'super_admin'} className={inputClass} />
+                    <Input id="lastName1" label="Primer Apellido" required error={errors.lastName1?.message} {...register('lastName1')} disabled={isEdit && currentUserRole !== 'super_admin'} className={inputClass} />
+                    <Input id="lastName2" label="Segundo Apellido" error={errors.lastName2?.message} {...register('lastName2')} disabled={isEdit && currentUserRole !== 'super_admin'} className={inputClass} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <Input id="dni" label="DNI/NIF" placeholder="12345678X" required error={errors.dni?.message} {...register('dni')} disabled={isEdit && currentUserRole !== 'super_admin'} className={inputClass} />
+                    <Input id="birthDate" label="Fecha de Nacimiento" type="date" required error={errors.birthDate?.message} {...register('birthDate')} disabled={isEdit && currentUserRole !== 'super_admin'} className={inputClass} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-1.5">
+                        <label className={labelClass}>Teléfono <span className="text-red-500">*</span></label>
                         <div className="flex gap-2">
-                            <select
-                                className="w-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500"
-                                value={emergencyPhonePrefix}
-                                onChange={(e) => setEmergencyPhonePrefix(e.target.value)}
-                            >
-                                {PHONE_PREFIXES.map(p => (
-                                    <option key={p.value} value={p.value}>{p.label}</option>
-                                ))}
+                            <select className={`${inputClass} w-28 shrink-0`} value={phonePrefix} onChange={(e) => setPhonePrefix(e.target.value)}>
+                                {PHONE_PREFIXES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                             </select>
-                            <div className="flex-1">
-                                <Input id="emergencyPhone" placeholder="Opcional" error={errors.emergencyPhone?.message} {...register('emergencyPhone')} />
-                            </div>
+                            <input {...register('phone')} placeholder="600000000" className={`${inputClass} flex-1`} />
+                        </div>
+                        {errors.phone?.message && <p className="text-xs text-red-500">{errors.phone.message}</p>}
+                    </div>
+                    <div className="space-y-1.5">
+                        <label className={labelClass}>Teléfono Emergencias</label>
+                        <div className="flex gap-2">
+                            <select className={`${inputClass} w-28 shrink-0`} value={emergencyPhonePrefix} onChange={(e) => setEmergencyPhonePrefix(e.target.value)}>
+                                {PHONE_PREFIXES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                            </select>
+                            <input {...register('emergencyPhone')} placeholder="Opcional" className={`${inputClass} flex-1`} />
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* 3. Dirección */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Dirección Postal</h3>
+            {/* 3. Dirección Postal */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 lg:col-span-1">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="size-9 rounded-lg bg-brand-600/10 flex items-center justify-center text-brand-600 shrink-0">
+                        <MapPin className="h-4 w-4" />
+                    </div>
+                    <h3 className="text-sm font-bold text-brand-600 uppercase tracking-wider">Dirección Postal</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                     <div className="md:col-span-6">
-                        <Input id="addressStreet" label="Calle/Vía" placeholder="Ej: Calle Mayor" {...register('addressStreet')} />
+                        <Input id="addressStreet" label="Calle/Vía" placeholder="Ej: Calle Mayor" {...register('addressStreet')} className={inputClass} />
                     </div>
                     <div className="md:col-span-3">
-                        <Input id="addressBlock" label="Bloque/Nº" {...register('addressBlock')} />
+                        <Input id="addressBlock" label="Bloque/Nº" {...register('addressBlock')} className={inputClass} />
                     </div>
                     <div className="md:col-span-3">
-                        <Input id="addressFloor" label="Piso/Puerta" {...register('addressFloor')} />
+                        <Input id="addressFloor" label="Piso/Puerta" {...register('addressFloor')} className={inputClass} />
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input id="addressLocality" label="Localidad" required placeholder="Ej: San Sebastián" error={errors.addressLocality?.message} {...register('addressLocality')} />
-                    <Select id="province" label="Provincia" required options={PROVINCES} error={errors.addressProvince?.message} {...register('addressProvince')} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <Input id="addressLocality" label="Localidad" required placeholder="Ej: San Sebastián" error={errors.addressLocality?.message} {...register('addressLocality')} className={inputClass} />
+                    <Select id="province" label="Provincia" required options={PROVINCES} error={errors.addressProvince?.message} {...register('addressProvince')} className={inputClass} />
                 </div>
             </div>
 
             {/* 4. Datos Clínicos */}
-            <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Datos Clínicos</h3>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 lg:col-span-1">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="size-9 rounded-lg bg-brand-600/10 flex items-center justify-center text-brand-600 shrink-0">
+                        <Activity className="h-4 w-4" />
+                    </div>
+                    <h3 className="text-sm font-bold text-brand-600 uppercase tracking-wider">Datos Clínicos</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Select id="bloodGroup" label="Grupo Sanguíneo" options={BLOOD_GROUPS} error={errors.bloodGroup?.message} {...register('bloodGroup')} />
-                    <Select id="gender" label="Sexo" options={GENDERS} error={errors.gender?.message} {...register('gender')} />
-                    <Input id="height" label="Altura (cm)" type="number" placeholder="Ej: 175" error={errors.height?.message} {...register('height')} />
-                    <Input id="weight" label="Peso (kg)" type="number" step="0.1" placeholder="Ej: 70.5" error={errors.weight?.message} {...register('weight')} />
+                    <Select id="bloodGroup" label="Grupo Sanguíneo" options={BLOOD_GROUPS} error={errors.bloodGroup?.message} {...register('bloodGroup')} className={inputClass} />
+                    <Select id="gender" label="Sexo" options={GENDERS} error={errors.gender?.message} {...register('gender')} className={inputClass} />
+                    <Input id="height" label="Altura (cm)" type="number" placeholder="Ej: 175" error={errors.height?.message} {...register('height')} className={inputClass} />
+                    <Input id="weight" label="Peso (kg)" type="number" step="0.1" placeholder="Ej: 70.5" error={errors.weight?.message} {...register('weight')} className={inputClass} />
                 </div>
 
-                {/* ALERGIAS SECTION - ADDED */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Alergias Conocidas</label>
+                <div className="space-y-2 mt-4">
+                    <label className={labelClass}>Alergias Conocidas</label>
 
                     <SearchableSelect
                         options={availableAllergies}
@@ -717,24 +729,24 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
                         }}
                         placeholder="-- Buscar y Añadir Alergia --"
                         className="mb-2"
-                        value="" // Always reset to allow new selection
+                        value=""
                     />
 
                     <div className="flex flex-wrap gap-2 mt-2">
                         {selectedAllergies.length > 0 && (
-                            <div className="flex flex-col w-full bg-gray-50 p-2 rounded-lg border border-gray-200 shadow-sm">
+                            <div className="flex flex-col w-full bg-slate-50 p-3 rounded-xl border border-slate-200">
                                 <div className="flex flex-wrap gap-2">
                                     {(showAllAllergies ? selectedAllergies : selectedAllergies.slice(0, 3)).map(a => (
-                                        <div key={a.id} className={`inline-flex items-center gap-2 border px-2 py-1.5 rounded-md text-xs font-medium shadow-sm transition-colors ${a.status === 2 ? 'bg-green-50 border-green-200 text-green-800' :
-                                            a.status === 1 ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+                                        <div key={a.id} className={`inline-flex items-center gap-2 border px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${a.status === 2 ? 'bg-brand-50 border-brand-200 text-brand-800' :
+                                            a.status === 1 ? 'bg-amber-50 border-amber-200 text-amber-800' :
                                                 'bg-red-50 border-red-200 text-red-800'
                                             }`}>
                                             <span className="mr-1">{a.label || a.description}</span>
 
                                             {/* Status Toggles */}
                                             <div className="flex gap-1 ml-1 bg-white/60 rounded px-1 py-0.5 border border-black/5">
-                                                <button type="button" onClick={() => handleUpdateAllergyStatus(a.id, 2)} className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${a.status === 2 ? 'bg-green-500 ring-1 ring-green-300' : 'bg-gray-200 hover:bg-green-200'}`} title="Confirmado" />
-                                                <button type="button" onClick={() => handleUpdateAllergyStatus(a.id, 1)} className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${a.status === 1 ? 'bg-yellow-500 ring-1 ring-yellow-300' : 'bg-gray-200 hover:bg-yellow-200'}`} title="Pendiente" />
+                                                <button type="button" onClick={() => handleUpdateAllergyStatus(a.id, 2)} className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${a.status === 2 ? 'bg-brand-600 ring-1 ring-brand-300' : 'bg-slate-200 hover:bg-brand-200'}`} title="Confirmado" />
+                                                <button type="button" onClick={() => handleUpdateAllergyStatus(a.id, 1)} className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${a.status === 1 ? 'bg-amber-500 ring-1 ring-amber-300' : 'bg-slate-200 hover:bg-amber-200'}`} title="Pendiente" />
                                                 <button type="button" onClick={() => handleUpdateAllergyStatus(a.id, 3)} className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${a.status === 3 ? 'bg-red-500 ring-1 ring-red-300' : 'bg-gray-200 hover:bg-red-200'}`} title="Inactivo" />
                                             </div>
 
@@ -753,7 +765,7 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
                                     <button
                                         type="button"
                                         onClick={() => setShowAllAllergies(!showAllAllergies)}
-                                        className="self-start mt-2 text-xs font-medium text-brand-600 hover:text-brand-800 underline flex items-center gap-1"
+                                        className="self-start mt-2 text-xs font-bold text-brand-600 hover:text-brand-700"
                                     >
                                         {showAllAllergies ? 'Ver menos' : `Ver más (${selectedAllergies.length - 3} restantes)`}
                                     </button>
@@ -762,89 +774,91 @@ export function PatientForm({ onSuccess, onCancel, initialData, isEdit }: {
                         )}
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 mt-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Antecedentes Médicos</label>
+                            <label className={labelClass}>Antecedentes Médicos</label>
                             <textarea
-                                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                className={`${inputClass} min-h-[80px] resize-none`}
                                 rows={3}
                                 placeholder="Cirugías previas, enfermedades crónicas..."
                                 {...register('background')}
-                            ></textarea>
+                            />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Hábitos de Vida</label>
+                            <label className={labelClass}>Hábitos del Paciente</label>
+                            <SearchableSelect
+                                options={availableHabits}
+                                onChange={(val) => {
+                                    if (val && typeof val === 'string') handleAddHabit(val);
+                                }}
+                                placeholder="-- Buscar y Añadir Hábito (Tabaco, Alcohol...) --"
+                                className="mb-2"
+                                value=""
+                            />
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {selectedHabits.length > 0 && (
+                                    <div className="flex flex-col w-full bg-slate-50 p-3 rounded-xl border border-slate-200">
+                                        <div className="flex flex-wrap gap-2">
+                                            {(showAllHabits ? selectedHabits : selectedHabits.slice(0, 3)).map(h => (
+                                                <div
+                                                    key={h.id}
+                                                    className={`inline-flex items-center gap-2 border px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${h.status === 1 ? 'bg-brand-50 border-brand-200 text-brand-800' : 'bg-slate-100 border-slate-300 text-slate-700'
+                                                        }`}
+                                                >
+                                                    <span className="mr-1">{h.label || h.description}</span>
 
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Hábitos del Paciente</label>
-
-                                        <SearchableSelect
-                                            options={availableHabits}
-                                            onChange={(val) => {
-                                                if (val && typeof val === 'string') handleAddHabit(val);
-                                            }}
-                                            placeholder="-- Buscar y Añadir Hábito (Tabaco, Alcohol...) --"
-                                            className="mb-2"
-                                            value=""
-                                        />
-
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            {selectedHabits.length > 0 && (
-                                                <div className="flex flex-col w-full bg-gray-50 p-2 rounded-lg border border-gray-200 shadow-sm">
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {(showAllHabits ? selectedHabits : selectedHabits.slice(0, 3)).map(h => (
-                                                            <div key={h.id} className={`inline-flex items-center gap-2 border px-2 py-1.5 rounded-md text-xs font-medium shadow-sm transition-colors ${h.status === 1 ? 'bg-green-50 border-green-200 text-green-800' :
-                                                                'bg-gray-100 border-gray-300 text-gray-700'
-                                                                }`}>
-                                                                <span className="mr-1">{h.label || h.description}</span>
-
-                                                                {/* Status Toggles - Simple Active/Past toggle */}
-                                                                <div className="flex gap-1 ml-1 bg-white/60 rounded px-1 py-0.5 border border-black/5">
-                                                                    <button type="button" onClick={() => handleUpdateHabitStatus(h.id, 1)} className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${h.status === 1 ? 'bg-green-500 ring-1 ring-green-300' : 'bg-gray-200 hover:bg-green-200'}`} title="Activo" />
-                                                                    <button type="button" onClick={() => handleUpdateHabitStatus(h.id, 2)} className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${h.status === 2 ? 'bg-gray-500 ring-1 ring-gray-400' : 'bg-gray-200 hover:bg-gray-300'}`} title="Ex-hábito / Inactivo" />
-                                                                </div>
-
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleRemoveHabit(h.id)}
-                                                                    className="hover:bg-black/10 rounded-full p-0.5 transition-colors ml-1 text-inherit"
-                                                                >
-                                                                    <X className="h-3.5 w-3.5" />
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    {selectedHabits.length > 3 && (
+                                                    <div className="flex gap-1 ml-1 bg-white/60 rounded px-1 py-0.5 border border-black/5">
                                                         <button
                                                             type="button"
-                                                            onClick={() => setShowAllHabits(!showAllHabits)}
-                                                            className="self-start mt-2 text-xs font-medium text-brand-600 hover:text-brand-800 underline flex items-center gap-1"
-                                                        >
-                                                            {showAllHabits ? 'Ver menos' : `Ver más (${selectedHabits.length - 3} restantes)`}
-                                                        </button>
-                                                    )}
+                                                            onClick={() => handleUpdateHabitStatus(h.id, 1)}
+                                                            className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${h.status === 1 ? 'bg-brand-600 ring-1 ring-brand-300' : 'bg-slate-200 hover:bg-brand-200'}`}
+                                                            title="Activo"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleUpdateHabitStatus(h.id, 2)}
+                                                            className={`w-3 h-3 rounded-full border border-black/10 transition-transform hover:scale-110 ${h.status === 2 ? 'bg-slate-500 ring-1 ring-slate-400' : 'bg-slate-200 hover:bg-slate-300'}`}
+                                                            title="Ex-hábito / Inactivo"
+                                                        />
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveHabit(h.id)}
+                                                        className="hover:bg-black/10 rounded-full p-0.5 transition-colors ml-1 text-inherit"
+                                                    >
+                                                        <X className="h-3.5 w-3.5" />
+                                                    </button>
                                                 </div>
-                                            )}
+                                            ))}
                                         </div>
+
+                                        {selectedHabits.length > 3 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowAllHabits(!showAllHabits)}
+                                                className="self-start mt-2 text-xs font-bold text-brand-600 hover:text-brand-700"
+                                            >
+                                                {showAllHabits ? 'Ver menos' : `Ver más (${selectedHabits.length - 3} restantes)`}
+                                            </button>
+                                        )}
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
-                <Button type="submit" isLoading={isLoading}>
+            {/* Actions — estilo Stitch / Detalle de Consulta */}
+            <div className="flex justify-end gap-3 pt-4 mt-6 border-t border-slate-100 bg-slate-50 -mx-6 -mb-6 px-6 pb-6 rounded-b-xl lg:col-span-2">
+                <Button type="button" variant="outline" onClick={onCancel} className="border-slate-200 text-slate-700 hover:bg-slate-100">
+                    Cancelar
+                </Button>
+                <Button type="submit" isLoading={isLoading} className="bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-md">
                     {isEdit ? 'Actualizar Información' : 'Registrar Paciente'}
                 </Button>
             </div>
-        </form >
+        </form>
     );
 }

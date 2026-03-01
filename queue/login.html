@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f4d40",
+                        "primary-light": "#7ed8c8",
+                        "primary-accent": "#BDF7EB",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#12201d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .medical-pattern {
+            background-color: #BDF7EB;
+            background-image: radial-gradient(#7ed8c8 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex min-h-screen">
+<!-- Left Side: Visual Content -->
+<div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary-accent to-primary-light p-12 flex-col justify-between">
+<div class="absolute inset-0 medical-pattern opacity-30"></div>
+<div class="relative z-10 flex items-center gap-3">
+<div class="size-10 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-primary text-2xl font-bold tracking-tight">SanIA</h2>
+</div>
+<div class="relative z-10 max-w-md">
+<h1 class="text-primary text-5xl font-black leading-tight tracking-tight mb-4">
+                    Gestión médica inteligente
+                </h1>
+<p class="text-primary/80 text-lg leading-relaxed">
+                    Optimizando la atención sanitaria a través de tecnología avanzada y procesos simplificados para profesionales de la salud.
+                </p>
+</div>
+<div class="relative z-10">
+<div class="flex -space-x-4 mb-4">
+<img alt="Doctor 1" class="w-10 h-10 rounded-full border-2 border-white object-cover" data-alt="Portrait of a doctor smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDg3HveRfEfk1nTBss1fwjOuJz8ZnPLtpKEptKqHSyzmWiWfDIdvzEENMJLRE4ujUI2mxW1feJ5jKnd4VSB4Hy41kxL9uyJjFwZR5l2G73MERX1p689iJmSa8bIF8H-HPeX8F8025Gc82LpfQ-SmdS3PgMCY1OFS-Hwjh8AZmuW96n_bAhLSMtMmYpiy01omPzbqGjwJ6Wrb0OGmxRafG6tyFj0tE04AiEavQhh6_3T3K6IEa-c92R9Fq9wKIG-A9SzAWTSuI_S5M"/>
+<img alt="Doctor 2" class="w-10 h-10 rounded-full border-2 border-white object-cover" data-alt="Female healthcare professional in lab coat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3DIHP1tsduiVrZ1LkXKYTnJYcyXP2Mjpj0iZSrsP4SUPp7G7ZJrMMc2jV00zI5qmtCnM5-US7E9M8s7WKFjbPH0hUiLb9LvwR-sk7sqCx1EGyoSxcOnsSKq5q4JvaFS4UjqO_N2fU74qmtL4JKyLG6tQXqAqFhBk6QtzpIl7nHTelHflKfMn0EO7xPqA6mieq151KYaQl4xD1zh9B0bAjPmHGkPpWi_6MI98zZ5YNfngcOuNfCIaTHJ4fCrcATtoPGsT7_B8MOfQ"/>
+<img alt="Doctor 3" class="w-10 h-10 rounded-full border-2 border-white object-cover" data-alt="Close up of medical specialist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXFqdwpr2vwqZy6p-7F2pFkX76aLnMc_6VYMUBuHq6UbS8O01bljYNXI66kDLUHQ0-GPp74EZK9MqhxGhMUPTy9Fl1f8-Lj5wn2nRv7QbuenA1L3ync3fz1Hccg6144GtyMEPFw-ZJJMGlph_uoVB8iw5jgY8GL5S2bQB_Yssf-BD2XOid10D3WHc8xHYH-uXuQnY2cmjVbtr8DeQm4Fl0Nh0YGsoCUBPkQirzRkuU8j6l6Bu4u35pIINbgmNcDTH0aFBhq0H94lU"/>
+<div class="flex items-center justify-center w-10 h-10 rounded-full border-2 border-white bg-primary text-white text-xs font-bold">+5k</div>
+</div>
+<p class="text-primary text-sm font-medium">Más de 5,000 profesionales ya confían en SanIA</p>
+</div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-white dark:bg-background-dark">
+<div class="w-full max-w-md space-y-8">
+<!-- Mobile Logo -->
+<div class="lg:hidden flex items-center gap-3 mb-8">
+<div class="size-8 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-primary text-xl font-bold tracking-tight">SanIA</h2>
+</div>
+<div class="space-y-2">
+<h2 class="text-slate-900 dark:text-slate-100 text-3xl font-bold tracking-tight">Panel de Acceso</h2>
+<p class="text-slate-500 dark:text-slate-400">Bienvenido de nuevo. Por favor, introduzca sus credenciales.</p>
+</div>
+<form class="space-y-6">
+<div class="space-y-2">
+<label class="text-slate-700 dark:text-slate-300 text-sm font-semibold" for="email">Correo Electrónico</label>
+<div class="relative">
+<input class="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3.5 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none" id="email" name="email" placeholder="ejemplo@sania.es" required="" type="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<label class="text-slate-700 dark:text-slate-300 text-sm font-semibold" for="password">Contraseña</label>
+<a class="text-primary text-sm font-medium hover:underline" href="#">¿Has olvidado tu contraseña?</a>
+</div>
+<div class="relative group">
+<input class="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3.5 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-primary focus:ring-1 focus:ring-primary transition-all outline-none pr-12" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary p-1" type="button">
+<span class="material-symbols-outlined text-[22px]">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<input class="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4" id="remember" type="checkbox"/>
+<label class="text-sm text-slate-600 dark:text-slate-400" for="remember">Recordar sesión durante 30 días</label>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group" type="submit">
+<span>Entrar</span>
+<span class="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</form>
+<div class="relative py-4">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase">
+<span class="bg-white dark:bg-background-dark px-2 text-slate-500">O continuar con</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+<svg class="h-5 w-5" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+                        Google
+                    </button>
+<button class="flex items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+<svg class="h-5 w-5" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482C19.137 20.164 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path>
+</svg>
+                        GitHub
+                    </button>
+</div>
+<p class="text-center text-sm text-slate-500 dark:text-slate-400">
+                    ¿No tienes una cuenta? <a class="text-primary font-bold hover:underline" href="#">Solicitar acceso</a>
+</p>
+<footer class="pt-8 flex justify-center space-x-6 text-xs text-slate-400 font-medium">
+<a class="hover:text-primary" href="#">Términos</a>
+<a class="hover:text-primary" href="#">Privacidad</a>
+<a class="hover:text-primary" href="#">Contacto</a>
+</footer>
+</div>
+</div>
+</div>
+</body></html>

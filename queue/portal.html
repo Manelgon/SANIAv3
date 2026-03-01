@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SanIA Patient Portal Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0f4d41",
+              "accent-light": "#BDF7EB",
+              "accent-dark": "#7ed8c8",
+              "background-light": "#f6f8f7",
+              "background-dark": "#12201d",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.75rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 w-full bg-white dark:bg-background-dark border-b border-primary/10 px-4 md:px-10 lg:px-20 py-3 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-1.5 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-2xl">health_metrics</span>
+</div>
+<div>
+<h2 class="text-primary dark:text-accent-light text-xl font-bold leading-tight tracking-tight">SanIA</h2>
+<p class="text-[10px] uppercase tracking-widest text-primary/60 dark:text-accent-light/60 font-semibold">Salud Inteligente</p>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary dark:text-slate-100 text-sm font-semibold border-b-2 border-primary pb-0.5" href="#">Resumen</a>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Consultas</a>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Documentos</a>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-primary transition-colors" href="#">Perfil</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 lg:gap-6">
+<div class="hidden lg:flex items-center bg-slate-100 dark:bg-primary/10 rounded-xl px-3 py-1.5">
+<span class="material-symbols-outlined text-slate-400 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-40 placeholder:text-slate-400" placeholder="Buscar..." type="text"/>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary/5 hover:bg-primary/10 text-primary dark:text-accent-light rounded-xl transition-all text-sm font-bold">
+<span class="material-symbols-outlined text-lg">shield_with_heart</span>
+<span class="hidden sm:inline">Mi Portal de Salud</span>
+</button>
+<div class="relative group">
+<div class="w-10 h-10 rounded-full border-2 border-primary/20 overflow-hidden cursor-pointer" data-alt="Foto de perfil del paciente">
+<img alt="Paciente" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAavMjIfRgd42epZfTyANzolRidQ2ywBUkxx_P7UBiTlI5SwWRmFEZwZPpiwLX9ZmrGT7Hy64zBqkaslHrXPBjfGD8WwI__VHmDxIGuVx8GEW3dDO2rGuhIc8bWAwwmjMVUHSr6_gt9xbd0GDOqevUpX0_u1vY3PdgV36aGiWhMcUZzrM39EDxauDp5z_0B7NgZHvUfodq0i1bJfkRTyJ9Sv3g1YklMA0tQyE2DjwpVO-SHyMhJux9XHgK42h6b84NkksPiKjJ_K7k"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow max-w-7xl mx-auto w-full px-4 md:px-10 lg:px-20 py-8 space-y-8">
+<!-- Welcome Banner -->
+<section class="relative overflow-hidden rounded-xl bg-gradient-to-r from-accent-light to-accent-dark p-8 md:p-12 shadow-sm border border-white/20">
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+<div>
+<h1 class="text-primary text-3xl md:text-4xl font-extrabold tracking-tight mb-2">¡Bienvenido/a, Carlos Ortega!</h1>
+<p class="text-primary/80 font-medium max-w-md">Tu salud es nuestra prioridad. Aquí tienes un resumen de tu actividad médica reciente y próximos pasos.</p>
+</div>
+<div class="flex gap-4">
+<div class="bg-white/40 backdrop-blur-md p-4 rounded-xl text-center min-w-[100px] border border-white/30">
+<span class="block text-2xl font-bold text-primary">36.5°</span>
+<span class="text-[10px] uppercase font-bold text-primary/60">Temp Corp</span>
+</div>
+<div class="bg-white/40 backdrop-blur-md p-4 rounded-xl text-center min-w-[100px] border border-white/30">
+<span class="block text-2xl font-bold text-primary">72</span>
+<span class="text-[10px] uppercase font-bold text-primary/60">BPM</span>
+</div>
+</div>
+</div>
+<!-- Abstract pattern overlay -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full -ml-10 -mb-10 blur-2xl"></div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Recent Consultations Table -->
+<section class="bg-white dark:bg-primary/5 rounded-xl border border-primary/10 shadow-sm overflow-hidden">
+<div class="px-6 py-5 border-b border-primary/5 flex justify-between items-center">
+<h3 class="text-primary dark:text-accent-light text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined">event_note</span>
+                                Mis Consultas Recientes
+                            </h3>
+<button class="text-primary/70 hover:text-primary text-sm font-semibold">Ver historial completo</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-primary/10">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-primary/60 uppercase">Fecha</th>
+<th class="px-6 py-4 text-xs font-bold text-primary/60 uppercase">Especialista</th>
+<th class="px-6 py-4 text-xs font-bold text-primary/60 uppercase">Estado</th>
+<th class="px-6 py-4 text-xs font-bold text-primary/60 uppercase text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">12 Oct, 2023</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">LG</div>
+<span class="text-sm font-semibold">Dra. Lucía García</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Completada
+                                            </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary bg-primary/5 hover:bg-primary/10 px-4 py-1.5 rounded-lg text-xs font-bold transition-all">Ver Detalles</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">05 Oct, 2023</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">RR</div>
+<span class="text-sm font-semibold">Dr. Roberto Rodriguez</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Completada
+                                            </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary bg-primary/5 hover:bg-primary/10 px-4 py-1.5 rounded-lg text-xs font-bold transition-all">Ver Detalles</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 text-sm font-medium">20 Sep, 2023</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">EL</div>
+<span class="text-sm font-semibold">Dra. Elena Lopez</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                Pendiente
+                                            </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary bg-primary/5 hover:bg-primary/10 px-4 py-1.5 rounded-lg text-xs font-bold transition-all">Ver Detalles</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Documents Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="text-primary dark:text-accent-light text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined">folder_open</span>
+                                Mis Documentos
+                            </h3>
+<button class="text-xs font-bold bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors">Subir Nuevo</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Receta -->
+<div class="bg-white dark:bg-primary/10 border border-primary/10 rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow group cursor-pointer">
+<div class="w-12 h-12 rounded-lg bg-red-50 text-red-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<div class="flex-grow">
+<h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Receta Médica - Cardiología</h4>
+<p class="text-xs text-slate-500">Actualizado hace 2 días • 1.2 MB</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary">download</span>
+</div>
+<!-- Informe -->
+<div class="bg-white dark:bg-primary/10 border border-primary/10 rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-shadow group cursor-pointer">
+<div class="w-12 h-12 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">lab_profile</span>
+</div>
+<div class="flex-grow">
+<h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">Informe Analítica Sangre</h4>
+<p class="text-xs text-slate-500">01 Oct, 2023 • 3.5 MB</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary">download</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column -->
+<div class="lg:col-span-4 space-y-8">
+<!-- Upcoming Appointment Card -->
+<section class="bg-primary text-white rounded-xl p-6 shadow-xl relative overflow-hidden">
+<div class="relative z-10 space-y-4">
+<div class="flex justify-between items-start">
+<span class="bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded">Próxima Cita</span>
+<span class="material-symbols-outlined text-accent-light">calendar_today</span>
+</div>
+<div>
+<h3 class="text-2xl font-bold">Mañana, 09:30</h3>
+<p class="text-accent-light/80 font-medium">Revisión General - Dr. Santos</p>
+</div>
+<div class="pt-4 space-y-3">
+<button class="w-full bg-accent-light hover:bg-accent-dark text-primary font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">calendar_add_on</span>
+                                    Añadir al Calendario
+                                </button>
+<button class="w-full bg-transparent border border-white/20 hover:bg-white/10 text-white text-xs font-bold py-2 rounded-lg transition-all">
+                                    Gestionar Cita
+                                </button>
+</div>
+</div>
+<!-- Abstract glow -->
+<div class="absolute -bottom-10 -right-10 w-32 h-32 bg-accent-light/10 rounded-full blur-2xl"></div>
+</section>
+<!-- Patient Details -->
+<section class="bg-white dark:bg-primary/5 rounded-xl border border-primary/10 shadow-sm p-6">
+<h3 class="text-primary dark:text-accent-light text-lg font-bold flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined">person</span>
+                            Mi Información Personal
+                        </h3>
+<div class="space-y-5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/60">id_card</span>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">DNI / NIE</p>
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">12345678-X</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/60">cake</span>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Nacimiento</p>
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">15 de Mayo, 1988</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/60">bloodtype</span>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Grupo Sanguíneo</p>
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">A Positivo (A+)</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary/60">home</span>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Dirección</p>
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug">Calle de la Salud, 24, 3ºB<br/>Madrid, 28001</p>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-primary/5">
+<button class="w-full border border-primary/20 hover:border-primary text-primary dark:text-accent-light text-sm font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">edit</span>
+                                Editar Información
+                            </button>
+</div>
+</section>
+<!-- Help Widget -->
+<div class="bg-accent-light/20 border border-accent-light rounded-xl p-5 flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-2xl">support_agent</span>
+<div>
+<h4 class="text-sm font-bold text-primary mb-1">¿Necesitas ayuda?</h4>
+<p class="text-xs text-primary/70 mb-3">Habla con nuestro asistente de IA o contacta con soporte técnico 24/7.</p>
+<a class="text-xs font-bold text-primary underline" href="#">Contactar soporte</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-white dark:bg-background-dark border-t border-primary/10 py-8 px-4 md:px-10 lg:px-20">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary/40">health_metrics</span>
+<p class="text-slate-400 text-xs font-medium">© 2023 SanIA Patient Portal. Todos los derechos reservados.</p>
+</div>
+<div class="flex gap-6">
+<a class="text-slate-400 hover:text-primary text-xs transition-colors" href="#">Términos de Servicio</a>
+<a class="text-slate-400 hover:text-primary text-xs transition-colors" href="#">Privacidad</a>
+<a class="text-slate-400 hover:text-primary text-xs transition-colors" href="#">Ayuda</a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

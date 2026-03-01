@@ -103,18 +103,19 @@ export function GenerateDocumentModal({ isOpen, onClose, patientId, onGenerated 
             // Generate "mock" document for now (real PDF generation would go here)
             const filename = `${docType.id.toUpperCase()}_${Date.now()}.pdf`;
 
-            // For now, we'll just create a record with a placeholder URL 
-            // In a real app, we would actually generate the PDF and upload it to storage
+            // TODO: generate and upload actual PDF to Storage, then set storage_path
             const { error: docError } = await (supabase
                 .from('patient_documents') as any)
                 .insert({
-                    patient_id: patientId,
-                    name: filename,
-                    title: docType.title,
-                    document_type: docType.id,
-                    url: '#', // Placeholder
-                    type: 'pdf',
-                    category: docType.dbCategory,
+                    patient_id:     patientId,
+                    name:           filename,
+                    title:          docType.title,
+                    document_type:  docType.id,
+                    storage_bucket: 'patient-documents',
+                    storage_path:   null,   // set when real PDF is uploaded
+                    url:            null,
+                    type:           'pdf',
+                    category:       docType.dbCategory,
                     practitioner_id: (practitioner as any).id
                 });
 

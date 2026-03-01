@@ -21,6 +21,7 @@ interface ResponsiveTableProps<T> {
     emptyMessage?: string;
     isLoading?: boolean;
     onRowClick?: (row: T) => void;
+    footer?: ReactNode;
 }
 
 export function ResponsiveTable<T>({
@@ -34,12 +35,30 @@ export function ResponsiveTable<T>({
     emptyMessage = "No hay datos disponibles",
     isLoading = false,
     onRowClick,
+    footer,
 }: ResponsiveTableProps<T>) {
     if (isLoading) {
         return (
-            <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden p-8 flex flex-col items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500 mb-2"></div>
-                <p className="text-sm text-gray-500">Cargando datos...</p>
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                {/* Header skeleton */}
+                <div className="bg-slate-50 border-b border-slate-200 px-4 py-3 flex gap-6">
+                    {[40, 28, 20, 12].map((w, i) => (
+                        <div key={i} className={`h-2.5 rounded bg-slate-200 animate-pulse`} style={{ width: `${w}%` }} />
+                    ))}
+                </div>
+                {/* Row skeletons */}
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="px-4 py-4 border-b border-slate-100 flex items-center gap-4">
+                        <div className="size-9 rounded-xl bg-slate-100 animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <div className="h-3 rounded bg-slate-100 animate-pulse" style={{ width: `${60 - i * 5}%` }} />
+                            <div className="h-2 rounded bg-slate-100 animate-pulse" style={{ width: `${40 - i * 4}%` }} />
+                        </div>
+                        <div className="h-2.5 rounded bg-slate-100 animate-pulse w-16" />
+                        <div className="h-2.5 rounded bg-slate-100 animate-pulse w-20" />
+                        <div className="h-6 w-6 rounded-lg bg-slate-100 animate-pulse" />
+                    </div>
+                ))}
             </div>
         );
     }
@@ -77,11 +96,11 @@ export function ResponsiveTable<T>({
                                     <div className="mt-3 flex flex-wrap gap-2">{mobileBadges(row)}</div>
                                 )}
                             </div>
-
                             <div className="shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>{mobileActions(row)}</div>
                         </div>
                     </div>
                 ))}
+                {footer && <div>{footer}</div>}
             </div>
 
             {/* MD+: tabla */}
@@ -94,7 +113,7 @@ export function ResponsiveTable<T>({
                                     <th
                                         key={col.key}
                                         className={cn(
-                                            "px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500",
+                                            "px-4 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400",
                                             col.className
                                         )}
                                     >
@@ -109,7 +128,7 @@ export function ResponsiveTable<T>({
                                 <tr
                                     key={getRowKey(row)}
                                     className={cn(
-                                        "hover:bg-slate-50/80 transition-colors",
+                                        "hover:bg-brand-50/40 transition-colors",
                                         onRowClick && "cursor-pointer"
                                     )}
                                     onClick={() => onRowClick?.(row)}
@@ -117,7 +136,7 @@ export function ResponsiveTable<T>({
                                     {columns.map((col) => (
                                         <td
                                             key={col.key}
-                                            className={cn("px-6 py-4 align-middle text-slate-600", col.className)}
+                                            className={cn("px-4 py-3.5 align-middle text-slate-600", col.className)}
                                         >
                                             {col.key === 'actions' ? (
                                                 <div onClick={(e) => e.stopPropagation()}>
@@ -133,6 +152,8 @@ export function ResponsiveTable<T>({
                         </tbody>
                     </table>
                 </div>
+                {/* Footer natural — pagination lives inside the card */}
+                {footer && <div>{footer}</div>}
             </div>
         </>
     );

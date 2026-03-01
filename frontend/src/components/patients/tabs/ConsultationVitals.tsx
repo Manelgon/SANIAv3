@@ -7,8 +7,18 @@ interface ConsultationVitalsProps {
     onUpdate?: (constants: ConsultationConstant[]) => void;
 }
 
+const CONSTANT_LABELS: Record<string, string> = {
+    WEIGHT: 'Peso',
+    HEIGHT: 'Talla',
+    BP_SYS: 'T.A. Sistólica',
+    BP_DIA: 'T.A. Diastólica',
+    HEART_RATE: 'FC',
+    TEMP: 'Temperatura',
+    SATO2: 'SpO₂',
+};
+
 export function ConsultationVitals({ constants, isEditMode = false, onUpdate }: ConsultationVitalsProps) {
-    const getConstantIcon = (code: string) => {
+    const getIcon = (code: string) => {
         switch (code) {
             case 'WEIGHT': return <Scale className="h-4 w-4" />;
             case 'HEIGHT': return <Ruler className="h-4 w-4" />;
@@ -22,50 +32,53 @@ export function ConsultationVitals({ constants, isEditMode = false, onUpdate }: 
     };
 
     return (
-        <div className="col-span-12 md:col-span-3 space-y-6">
-            <div className="flex items-center gap-2 px-1 border-b border-gray-100 pb-2">
-                <Activity className="h-4 w-4 text-brand-500" />
-                <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Biometría y Constantes</h5>
-            </div>
-            <div className="grid grid-cols-1 gap-2.5">
-                {constants.length > 0 ? constants.map((c, idx) => (
-                    <div key={idx} className="bg-gray-50/50 border border-gray-100 rounded-lg p-2 sm:px-3 sm:py-2.5 flex items-center justify-between transition-colors hover:bg-white hover:border-brand-100 shadow-sm">
-                        <div className="flex items-center gap-2.5">
-                            <div className="h-7 w-7 bg-white rounded-md flex items-center justify-center text-gray-400 border border-gray-100">
-                                {getConstantIcon(c.constant?.code)}
+        <div className="w-full space-y-4">
+            {/* Constantes section */}
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
+                    <Activity className="h-3.5 w-3.5 text-primary" />
+                    <h5 className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Constantes</h5>
+                </div>
+                {constants.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2 p-3">
+                        {constants.map((c, idx) => (
+                            <div
+                                key={idx}
+                                className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex flex-col items-center justify-center text-center"
+                            >
+                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wide mb-1">
+                                    {CONSTANT_LABELS[c.constant?.code ?? ''] ?? c.constant?.code?.replace(/_/g, ' ')}
+                                </span>
+                                {isEditMode ? (
+                                    <div className="flex items-baseline gap-1 justify-center">
+                                        <input
+                                            type="number"
+                                            value={c.value}
+                                            onChange={(e) => {
+                                                const newValue = parseFloat(e.target.value);
+                                                const updated = constants.map((ci, i) =>
+                                                    i === idx ? { ...ci, value: isNaN(newValue) ? 0 : newValue } : ci
+                                                );
+                                                onUpdate?.(updated);
+                                            }}
+                                            className="w-16 text-center p-1 text-sm font-bold border border-slate-300 rounded focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                                            step="0.01"
+                                        />
+                                        <span className="text-[10px] text-slate-400 font-medium">{c.constant?.unit}</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-baseline gap-0.5 justify-center">
+                                        <span className="text-base font-bold text-slate-900">{c.value}</span>
+                                        <span className="text-[10px] text-slate-400 font-medium ml-0.5">{c.constant?.unit}</span>
+                                    </div>
+                                )}
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">
-                                {c.constant?.code?.replace(/_/g, ' ')}
-                            </span>
-                        </div>
-                        {isEditMode ? (
-                            <div className="flex items-center gap-1 justify-end">
-                                <input
-                                    type="number"
-                                    value={c.value}
-                                    onChange={(e) => {
-                                        const newValue = parseFloat(e.target.value);
-                                        const updated = constants.map((constItem, i) =>
-                                            i === idx ? { ...constItem, value: isNaN(newValue) ? 0 : newValue } : constItem
-                                        );
-                                        onUpdate?.(updated);
-                                    }}
-                                    className="w-20 text-right p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-                                    step="0.01"
-                                />
-                                <span className="text-[9px] text-gray-400 font-bold uppercase">{c.constant?.unit}</span>
-                            </div>
-                        ) : (
-                            <div className="text-right flex items-baseline gap-1">
-                                <span className="text-sm font-black text-gray-900">{c.value}</span>
-                                <span className="text-[9px] text-gray-400 font-bold uppercase">{c.constant?.unit}</span>
-                            </div>
-                        )}
+                        ))}
                     </div>
-                )) : (
-                    <div className="flex flex-col items-center justify-center py-10 bg-gray-50/30 rounded-xl border border-dashed border-gray-200">
-                        <Activity className="h-6 w-6 text-gray-200 mb-2" />
-                        <p className="text-[9px] text-gray-400 font-black uppercase">Sin registros</p>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <Activity className="h-6 w-6 text-slate-200 mb-2" />
+                        <p className="text-xs text-slate-400">Sin constantes registradas</p>
                     </div>
                 )}
             </div>

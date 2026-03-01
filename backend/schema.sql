@@ -334,12 +334,34 @@
     practitioner_id UUID REFERENCES public.practitioners(id) ON DELETE SET NULL,
     category patient_document_category DEFAULT 'administrative_uploaded' NOT NULL,
     name TEXT NOT NULL,
-    url TEXT NOT NULL,
-    type TEXT NOT NULL, 
+    url TEXT,                          -- nullable: legacy field, new records use storage_path
+    storage_bucket TEXT DEFAULT 'patient-documents',
+    storage_path TEXT,                 -- e.g. "{patient_id}/ANALITICA_123.pdf"
+    type TEXT NOT NULL,
+    title TEXT,
+    document_type TEXT,
     fid TEXT,
     cip TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW()
   );
+
+  -- Index for fast lookups by storage_path (used in RLS checks)
+  CREATE INDEX IF NOT EXISTS idx_patient_documents_storage_path
+    ON public.patient_documents(storage_path);
+
+  -- ── Document Access Log ──────────────────────────────────────────
+  -- Stores every signed-URL request for audit purposes (RGPD requirement)
+  CREATE TABLE IF NOT EXISTS public.document_access_logs (
+    id          UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id     UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    bucket      TEXT NOT NULL,
+    path        TEXT NOT NULL,
+    expires_in  INTEGER NOT NULL,
+    accessed_at TIMESTAMPTZ DEFAULT NOW()
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_doc_access_logs_user ON public.document_access_logs(user_id);
+  CREATE INDEX IF NOT EXISTS idx_doc_access_logs_path ON public.document_access_logs(path);
 
   -- Trigger to sync patient data (FID, CIP) to documents
   CREATE OR REPLACE FUNCTION public.sync_patient_data_to_documents()
@@ -1399,6 +1421,7 @@
 
     -- RPC: Get Patients List with Auth Info
     DROP FUNCTION IF EXISTS public.get_patients_list();
+    DROP FUNCTION IF EXISTS public.get_patients_list(text, integer, integer);
     CREATE OR REPLACE FUNCTION public.get_patients_list(
         p_search TEXT DEFAULT NULL,
         p_limit INTEGER DEFAULT 20,
@@ -1422,7 +1445,10 @@
         background TEXT,
         habits TEXT,
         address JSONB,
+        locality TEXT,
         insured_number TEXT,
+        phone TEXT,
+        emergency_phone TEXT,
         created_at TIMESTAMPTZ,
         last_sign_in_at TIMESTAMPTZ,
         total_count BIGINT
@@ -1434,7 +1460,8 @@
                 p.id, p.practitioner_id, p.portfolio_id, port.name as portfolio_name, 
                 p.first_name, p.last_name_1, p.last_name_2, p.cip, p.dni, p.birth_date, 
                 p.gender, p.blood_group, p.height, p.weight, p.background, p.habits, 
-                p.address, p.insured_number, p.created_at, au.last_sign_in_at
+                p.address, p.locality, p.insured_number, p.phone, p.emergency_phone,
+                p.created_at, au.last_sign_in_at
             FROM public.patients p
             LEFT JOIN auth.users au ON p.user_id = au.id
             LEFT JOIN public.portfolios port ON p.portfolio_id = port.id
@@ -1445,7 +1472,7 @@
                    p.cip ILIKE '%' || p_search || '%' OR
                    p.dni ILIKE '%' || p_search || '%')
         )
-        SELECT *, (SELECT COUNT(*) FROM filtered_patients)
+        SELECT *, (SELECT COUNT(*) FROM filtered_patients)::BIGINT
         FROM filtered_patients
         ORDER BY created_at DESC
         LIMIT p_limit OFFSET p_offset;

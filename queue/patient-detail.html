@@ -1,0 +1,320 @@
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f4d40", // Updated to match user request #0f4d40
+                        "accent": "#BDF7EB",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#122015",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.75rem", // 12px rounding as requested
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-size: 20px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Header / Navigation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-primary/10 bg-white dark:bg-background-dark px-6 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">health_and_safety</span>
+</div>
+<h2 class="text-xl font-bold leading-tight tracking-tight">SanIA</h2>
+</div>
+<label class="flex flex-col min-w-64 h-10">
+<div class="flex w-full flex-1 items-stretch rounded-xl bg-slate-100 dark:bg-slate-800 h-full">
+<div class="text-slate-500 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-slate-500 px-3" placeholder="Buscar paciente, historial..." value=""/>
+</div>
+</label>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-300 text-sm font-semibold hover:text-primary transition-colors" href="#">Mis Pacientes</a>
+<a class="text-slate-600 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Agenda</a>
+<a class="text-slate-600 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Reportes</a>
+</nav>
+<div class="flex items-center gap-4 border-l border-slate-200 dark:border-slate-700 pl-6">
+<button class="size-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center border-2 border-white dark:border-slate-800 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Doctor profile portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvI3JZMlhtQyCEHeZccGFc1s77dSx--w7mw6FLymhsO2I1LMlMjCPFsEYrfhmb_DHKBRko5JE_uv6xLhNsCObTvNUfZ5uaDkOpF1T8Arf9LofzQvcQRRl4mYG1eOCi81z15zNyt46MsozNBdiN9nVDPpRiIV4e1U9hY5kGDWs-lqr_nJ6r1OPe4SCB5oVposX7uwk-hBkssHk576Yd7AxNRC1QsY0JOjJCUzpuXJJSrPPVVgnn7CeEi6EJfTmyfs5WFGM0iIrWqzg"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto w-full px-6 py-8">
+<!-- Breadcrumbs & Actions -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+<nav class="flex items-center gap-2 text-sm">
+<a class="text-slate-500 hover:text-primary" href="#">Mis Pacientes</a>
+<span class="text-slate-400">
+<span class="material-symbols-outlined !text-[14px]">chevron_right</span>
+</span>
+<span class="font-bold text-slate-900 dark:text-slate-100">Juan García López</span>
+</nav>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded font-bold text-sm hover:bg-slate-300 transition-colors">
+<span class="material-symbols-outlined">print</span>
+                        Imprimir Ficha
+                    </button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded font-bold text-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                        Nueva Consulta
+                    </button>
+</div>
+</div>
+<!-- Patient Hero Card -->
+<div class="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 p-6 mb-8 shadow-sm">
+<div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+<div class="w-24 h-24 rounded-full bg-gradient-to-br from-[#0f4d40] to-[#2a9d8f] flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                        JG
+                    </div>
+<div class="flex-1">
+<div class="flex flex-wrap items-center gap-3 mb-2">
+<h1 class="text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Juan García López</h1>
+<span class="px-3 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs font-bold rounded-full uppercase tracking-wider">Alto Riesgo</span>
+<span class="px-3 py-1 bg-accent/30 text-primary dark:bg-primary/20 dark:text-accent text-xs font-bold rounded-full uppercase tracking-wider border border-accent/50">Activo</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-y-2 gap-x-8">
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-lg">badge</span>
+<span class="text-sm font-medium">DNI: <span class="text-slate-900 dark:text-slate-200">4***78K</span></span>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-lg">calendar_today</span>
+<span class="text-sm font-medium">Edad: <span class="text-slate-900 dark:text-slate-200">56 años</span></span>
+</div>
+<div class="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined !text-lg">call</span>
+<span class="text-sm font-medium">+34 600 000 000</span>
+</div>
+</div>
+</div>
+<div class="w-full md:w-auto flex md:flex-col gap-2">
+<div class="flex-1 bg-background-light dark:bg-slate-800 p-3 rounded border border-slate-100 dark:border-slate-700">
+<p class="text-[10px] uppercase font-bold text-slate-500 mb-1">Última Visita</p>
+<p class="text-sm font-bold text-primary dark:text-accent">12 Oct 2023</p>
+</div>
+<div class="flex-1 bg-background-light dark:bg-slate-800 p-3 rounded border border-slate-100 dark:border-slate-700">
+<p class="text-[10px] uppercase font-bold text-slate-500 mb-1">Próxima Cita</p>
+<p class="text-sm font-bold text-slate-900 dark:text-slate-200">25 Nov 2023</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column (2/3) -->
+<div class="lg:col-span-2 space-y-8">
+<!-- Historial de Consultas -->
+<section class="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">history</span>
+                                Historial de Consultas
+                            </h3>
+<button class="text-xs font-bold text-primary hover:underline uppercase tracking-wider">Ver Todo</button>
+</div>
+<div class="p-6">
+<div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:h-full before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+<!-- Timeline Item 1 -->
+<div class="relative flex items-start gap-6 group">
+<div class="mt-1.5 size-10 rounded-full bg-primary flex items-center justify-center text-white ring-8 ring-white dark:ring-slate-900 z-10">
+<span class="material-symbols-outlined !text-lg">stethoscope</span>
+</div>
+<div class="flex-1 pb-2">
+<div class="flex justify-between items-center mb-1">
+<time class="text-sm font-bold text-slate-500">12 Octubre, 2023</time>
+<span class="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold rounded uppercase">Completada</span>
+</div>
+<h4 class="text-base font-bold text-slate-900 dark:text-slate-100">Control de Hipertensión</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1 italic">"Paciente presenta mejoría tras ajuste de dosis. Continúa plan de ejercicio diario."</p>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative flex items-start gap-6 group">
+<div class="mt-1.5 size-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 ring-8 ring-white dark:ring-slate-900 z-10">
+<span class="material-symbols-outlined !text-lg">medication</span>
+</div>
+<div class="flex-1 pb-2">
+<div class="flex justify-between items-center mb-1">
+<time class="text-sm font-bold text-slate-500">22 Septiembre, 2023</time>
+<span class="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold rounded uppercase">Completada</span>
+</div>
+<h4 class="text-base font-bold text-slate-900 dark:text-slate-100">Revisión Cardíaca Post-Operativa</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Diagnóstico principal: Insuficiencia cardíaca compensada. Solicitud de analítica completa.</p>
+</div>
+</div>
+<!-- Timeline Item 3 -->
+<div class="relative flex items-start gap-6 group">
+<div class="mt-1.5 size-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 ring-8 ring-white dark:ring-slate-900 z-10">
+<span class="material-symbols-outlined !text-lg">emergency</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<time class="text-sm font-bold text-slate-500">05 Agosto, 2023</time>
+<span class="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold rounded uppercase">Completada</span>
+</div>
+<h4 class="text-base font-bold text-slate-900 dark:text-slate-100">Consulta Urgente - Disnea</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Episodio de dificultad respiratoria leve. Estabilizado en clínica.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Diagnósticos Activos -->
+<section class="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">label</span>
+                                Diagnósticos Activos
+                            </h3>
+<button class="size-8 rounded bg-primary/10 text-primary flex items-center justify-center hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Diagnostic 1 -->
+<div class="p-4 border border-slate-100 dark:border-slate-800 rounded bg-background-light/50 dark:bg-slate-800/30 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-black bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">I10</span>
+<span class="text-sm font-bold text-slate-900 dark:text-slate-100">Hipertensión esencial</span>
+</div>
+<p class="text-xs text-slate-500">Desde: Enero 2021</p>
+</div>
+<span class="px-2 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-bold rounded uppercase">Crónico</span>
+</div>
+<!-- Diagnostic 2 -->
+<div class="p-4 border border-slate-100 dark:border-slate-800 rounded bg-background-light/50 dark:bg-slate-800/30 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-black bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">I20</span>
+<span class="text-sm font-bold text-slate-900 dark:text-slate-100">Angina de pecho</span>
+</div>
+<p class="text-xs text-slate-500">Desde: Marzo 2023</p>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold rounded uppercase">Estable</span>
+</div>
+<!-- Diagnostic 3 -->
+<div class="p-4 border border-slate-100 dark:border-slate-800 rounded bg-background-light/50 dark:bg-slate-800/30 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-xs font-black bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">E11</span>
+<span class="text-sm font-bold text-slate-900 dark:text-slate-100">Diabetes Mellitus Tipo 2</span>
+</div>
+<p class="text-xs text-slate-500">Desde: Junio 2018</p>
+</div>
+<span class="px-2 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-bold rounded uppercase">En Seguimiento</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column (1/3) -->
+<div class="space-y-8">
+<!-- Documentos -->
+<section class="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">description</span>
+                                Documentos
+                            </h3>
+<span class="text-[10px] font-bold text-slate-400 uppercase">PDF</span>
+</div>
+<div class="p-4 space-y-2">
+<div class="flex items-center justify-between p-3 rounded bg-background-light/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
+<div>
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Analitica_2023_10.pdf</p>
+<p class="text-[10px] text-slate-500">12 Oct 2023 · 1.2 MB</p>
+</div>
+</div>
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary group-hover:bg-white dark:group-hover:bg-slate-700 transition-all shadow-none group-hover:shadow-sm">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded bg-background-light/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
+<div>
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Electrocardiograma.pdf</p>
+<p class="text-[10px] text-slate-500">22 Sep 2023 · 3.4 MB</p>
+</div>
+</div>
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary group-hover:bg-white dark:group-hover:bg-slate-700 transition-all shadow-none group-hover:shadow-sm">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded bg-background-light/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-red-500">picture_as_pdf</span>
+<div>
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Informe_Alta_Hosp.pdf</p>
+<p class="text-[10px] text-slate-500">05 Ago 2023 · 0.8 MB</p>
+</div>
+</div>
+<button class="size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-primary group-hover:bg-white dark:group-hover:bg-slate-700 transition-all shadow-none group-hover:shadow-sm">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<button class="w-full mt-2 py-2 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded text-slate-400 text-xs font-bold hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined !text-[16px]">upload_file</span>
+                                Subir Documento
+                            </button>
+</div>
+</section>
+<!-- Notas Clínicas -->
+<section class="bg-white dark:bg-slate-900 rounded border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+<h3 class="font-bold text-slate-900 dark:text-slate-100">Notas Clínicas Internas</h3>
+</div>
+<div class="p-6 space-y-4">
+<div class="p-3 bg-accent/10 dark:bg-primary/10 rounded-lg border-l-4 border-primary">
+<p class="text-xs font-bold text-primary mb-1">Última nota (Dra. Elena Ruiz):</p>
+<p class="text-xs text-slate-700 dark:text-slate-300">Pendiente de recibir resultados de ecografía abdominal solicitada externamente.</p>
+</div>
+<div class="flex flex-col gap-3">
+<textarea class="w-full h-32 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded focus:ring-1 focus:ring-primary focus:border-primary text-sm placeholder:text-slate-400" placeholder="Escribir una nota privada sobre el paciente..."></textarea>
+<button class="w-full py-2.5 bg-primary text-white rounded font-bold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined !text-[18px]">save</span>
+                                    Guardar Nota
+                                </button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+
+```</body></html>

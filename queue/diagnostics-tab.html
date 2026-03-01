@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f4d3f",
+                        "accent": "#BDF7EB",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#12201d",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>SanIA - Diagnósticos del Paciente</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between border-b border-primary/10 bg-white dark:bg-slate-900 px-8 py-3 shrink-0">
+<div class="flex items-center gap-12">
+<div class="flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">health_and_safety</span>
+</div>
+<h2 class="text-primary text-xl font-black leading-tight tracking-tight">SanIA</h2>
+</div>
+<nav class="flex items-center gap-8">
+<a class="text-slate-500 dark:text-slate-400 text-sm font-semibold hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary pb-1" href="#">Pacientes</a>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-semibold hover:text-primary transition-colors" href="#">Agenda</a>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-semibold hover:text-primary transition-colors" href="#">Configuración</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="relative flex min-w-64">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined">search</span>
+<input class="w-full h-10 pl-10 pr-4 rounded-xl border-none bg-slate-100 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Buscar pacientes..."/>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+<div class="bg-primary/10 rounded-full h-10 w-10 overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="Avatar circular de un profesional médico" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMk9L3u_bueZbiG6guiey8Q6rWLNbN8r0bX0fV91u5UMPwZ9mKXxh7rJugTCDD-12K--9NGd6sT1dJV84Fne2jUmhPqUo-tDnL_BYd3jFjWqc_5lsNH2U6oCpibrqHcOhwavDvfW8uHjAqRdEhjwI78QASNjQ5CkqAMyxwOOf-96iuNwjFGAXy9RI19AozbkH1Ad_1ksZprvZd11bikKYnUhut6f_XSrELoemJCDq3O32NH3YfzoK83yRQaMQ9EcK894zzW5OIFG4"/>
+</div>
+</div>
+</header>
+<!-- Breadcrumbs and Patient Header -->
+<div class="px-8 py-4 bg-white dark:bg-slate-900 border-b border-primary/10 flex justify-between items-center shrink-0">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-400 uppercase tracking-wider">
+<a class="hover:text-primary" href="#">Pacientes</a>
+<span class="material-symbols-outlined text-[10px]">arrow_forward_ios</span>
+<span class="text-primary">Juan Pérez García</span>
+</div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Juan Pérez García <span class="text-slate-400 font-normal ml-2">#PT-8821</span></h1>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl flex items-center gap-2 shadow-sm hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-sm">add</span>
+                Nuevo Diagnóstico
+            </button>
+</div>
+</div>
+<!-- Main Content Area: Split Panels -->
+<main class="flex flex-1 overflow-hidden bg-background-light dark:bg-background-dark">
+<!-- Left Panel: List (28%) -->
+<aside class="w-[28%] border-r border-primary/10 flex flex-col bg-white dark:bg-slate-900/50">
+<div class="p-4 border-b border-primary/10 space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h3 class="font-black text-xs uppercase tracking-[0.1em] text-slate-500">Diagnósticos</h3>
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">12</span>
+</div>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+</div>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-lg">search</span>
+<input class="w-full h-10 pl-10 pr-4 rounded-lg border border-primary/10 bg-slate-50 dark:bg-slate-800 text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-primary/20" placeholder="Buscar código o diagnóstico..."/>
+</div>
+</div>
+<!-- Scrollable Diagnostic List -->
+<div class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+<!-- Selected Card -->
+<div class="group cursor-pointer rounded-xl border-l-4 border-primary bg-primary/5 p-4 shadow-sm ring-1 ring-primary/20">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded">J09-J18</span>
+<span class="text-[10px] text-primary font-bold uppercase tracking-wider">Activo</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Gripe y Neumonía</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Última consulta: 12 Oct 2023</p>
+<div class="flex justify-end">
+<span class="material-symbols-outlined text-primary text-lg">check_circle</span>
+</div>
+</div>
+<!-- Regular Card 1 -->
+<div class="group cursor-pointer rounded-xl border-l-4 border-emerald-500 bg-white dark:bg-slate-800 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary/30 transition-all">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded">A59.03</span>
+<span class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Confirmado</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Tricomoniasis vulvovaginal</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Última consulta: 28 Sep 2023</p>
+<div class="flex justify-end">
+<span class="material-symbols-outlined text-slate-300 text-lg">radio_button_unchecked</span>
+</div>
+</div>
+<!-- Regular Card 2 -->
+<div class="group cursor-pointer rounded-xl border-l-4 border-amber-500 bg-white dark:bg-slate-800 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary/30 transition-all">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded">I10</span>
+<span class="text-[10px] text-amber-600 font-bold uppercase tracking-wider">En tratamiento</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Hipertensión esencial</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Última consulta: 05 Ago 2023</p>
+<div class="flex justify-end">
+<span class="material-symbols-outlined text-slate-300 text-lg">radio_button_unchecked</span>
+</div>
+</div>
+<!-- Regular Card 3 -->
+<div class="group cursor-pointer rounded-xl border-l-4 border-slate-300 bg-white dark:bg-slate-800 p-4 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700 hover:ring-primary/30 transition-all">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded">E11.9</span>
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Histórico</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-slate-100 text-sm mb-1">Diabetes Mellitus Tipo 2</h4>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Última consulta: 14 Ene 2023</p>
+<div class="flex justify-end">
+<span class="material-symbols-outlined text-slate-300 text-lg">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Right Panel: Details (72%) -->
+<section class="w-[72%] flex flex-col overflow-y-auto custom-scrollbar">
+<!-- Details Header -->
+<div class="p-8 border-b border-primary/10 bg-white dark:bg-slate-900/40">
+<div class="flex items-start gap-6">
+<div class="size-20 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-5xl">stethoscope</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="text-primary font-black text-lg">CIE-10: J09-J18</span>
+<span class="bg-accent/30 text-primary text-[10px] font-bold px-2 py-1 rounded-full uppercase">Activo</span>
+</div>
+<h2 class="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Gripe y Neumonía</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-2 max-w-2xl leading-relaxed">
+                            Afección respiratoria viral caracterizada por inflamación de los pulmones. Paciente presenta tos persistente, fiebre y malestar general. Requiere seguimiento quincenal.
+                        </p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg border border-primary/10 hover:bg-slate-50 text-slate-600">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 rounded-lg border border-primary/10 hover:bg-slate-50 text-slate-600">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Tab Navigation for Details -->
+<div class="px-8 border-b border-primary/10 flex bg-white dark:bg-slate-900/40">
+<button class="py-4 px-6 border-b-2 border-primary text-primary font-bold text-sm">Consultas Relacionadas</button>
+<button class="py-4 px-6 text-slate-400 font-bold text-sm hover:text-primary transition-colors">Medicamentos</button>
+<button class="py-4 px-6 text-slate-400 font-bold text-sm hover:text-primary transition-colors">Laboratorio</button>
+<button class="py-4 px-6 text-slate-400 font-bold text-sm hover:text-primary transition-colors">Documentos</button>
+</div>
+<!-- Content: Consultations Table -->
+<div class="p-8">
+<div class="bg-white dark:bg-slate-800 rounded-xl ring-1 ring-primary/10 shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-900/50 border-b border-primary/10">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Profesional</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nota de Evolución</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-primary/5">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">12 Oct 2023</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold">DR</div>
+<span class="text-sm text-slate-700 dark:text-slate-300">Dr. Ricardo Salinas</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">Mejoría leve en la capacidad respiratoria. Se mantiene tratamiento...</p>
+</td>
+<td class="px-6 py-4">
+<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Borrador</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary material-symbols-outlined">visibility</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">28 Sep 2023</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold">DR</div>
+<span class="text-sm text-slate-700 dark:text-slate-300">Dr. Ricardo Salinas</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">Primer diagnóstico tras radiografía de tórax. Inicia antibióticos.</p>
+</td>
+<td class="px-6 py-4">
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Finalizado</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary material-symbols-outlined">visibility</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+<td class="px-6 py-4 text-sm font-semibold text-slate-700 dark:text-slate-300">15 Sep 2023</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] text-primary font-bold">EN</div>
+<span class="text-sm text-slate-700 dark:text-slate-300">Enf. Elena Navas</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">Triaje inicial por fiebre alta (39.2°C) y disnea.</p>
+</td>
+<td class="px-6 py-4">
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Finalizado</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary material-symbols-outlined">visibility</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination/Load more (Subtle) -->
+<div class="mt-6 flex justify-center">
+<button class="text-primary font-bold text-sm hover:underline flex items-center gap-2">
+                        Ver consultas anteriores
+                        <span class="material-symbols-outlined text-sm">keyboard_double_arrow_down</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(15, 77, 63, 0.1);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(15, 77, 63, 0.2);
+    }
+</style>
+</body></html>
