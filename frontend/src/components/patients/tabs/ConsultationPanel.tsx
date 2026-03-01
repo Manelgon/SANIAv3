@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, Save, CheckCircle2, Clock, XCircle, MinusCircle, FilePlus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { generateConsultationPDF } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/Dialog';
-import { CheckCircle2, FilePlus } from 'lucide-react';
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
-import pdfHeaderImg from '@/assets/pdf-header.png';
 
 interface ConsultationPanelProps {
     patientId: string;
@@ -43,8 +40,6 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [activeConsultation, setActiveConsultation] = useState<any>(null);
     const [constantCatalog, setConstantCatalog] = useState<Record<string, string>>({});
-    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-    const [generatedPdfName, setGeneratedPdfName] = useState('');
 
     // Diagnosis Search State
     const [diagnosisResults, setDiagnosisResults] = useState<any[]>([]);
@@ -307,91 +302,6 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                 }
             }
 
-            // 4. Fetch Practitioner Signature
-            const { data: signatureDoc } = await (supabase
-                .from('practitioner_documents') as any)
-                .select('url')
-                .eq('practitioner_id', (practitioner as any).id)
-                .eq('category', 'signature_stamp')
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
-
-            // 5. Generate & Save PDF
-            const pdfData = {
-                patient: {
-                    first_name: (patient as any).first_name,
-                    last_name_1: (patient as any).last_name_1,
-                    last_name_2: (patient as any).last_name_2,
-                    cip: (patient as any).cip,
-                    dni: (patient as any).dni,
-                    birth_date: (patient as any).birth_date
-                },
-                practitioner: {
-                    first_name: (practitioner as any).first_name,
-                    last_name_1: (practitioner as any).last_name_1,
-                    license_number: (practitioner as any).license_number
-                },
-                consultation: {
-                    motivo: data.motivo,
-                    exploracion: data.exploracion,
-                    tratamiento: data.tratamiento,
-                    aproximacion: data.aproximacion,
-                    diagnoses: data.selectedDiagnoses.map(d => ({ code: d.code, description: d.description })),
-                    date: consultation.scheduled_at
-                },
-                vitals: {
-                    weight: data.weight,
-                    height: data.height,
-                    systolic: data.systolic,
-                    diastolic: data.diastolic,
-                    heartRate: data.heartRate,
-                    temp: data.temp,
-                    satO2: data.satO2
-                },
-                headerImageUrl: pdfHeaderImg,
-                signatureUrl: signatureDoc?.url
-            };
-
-            const { blob, filename } = await generateConsultationPDF(pdfData);
-
-            // Upload to Supabase Storage
-            const filePath = `${patientId}/${Date.now()}_${filename}`;
-            const { error: uploadError } = await supabase.storage
-                .from('patient-documents')
-                .upload(filePath, blob);
-
-            if (uploadError) {
-                console.error('Error uploading PDF:', uploadError);
-                toast.error('Consulta guardada pero falló la creación del PDF en el servidor.');
-            } else {
-                // Get Public URL
-                const { data: { publicUrl } } = supabase.storage
-                    .from('patient-documents')
-                    .getPublicUrl(filePath);
-
-                // Create record in patient_documents
-                const { error: docError } = await (supabase
-                    .from('patient_documents') as any)
-                    .insert({
-                        patient_id: patientId,
-                        name: filename,
-                        title: 'Informe de Consulta',
-                        document_type: 'consultation_report',
-                        url: publicUrl,
-                        type: 'pdf',
-                        category: 'consultation_report',
-                        practitioner_id: (practitioner as any).id
-                    });
-
-                if (docError) {
-                    console.error('Error recording document:', docError);
-                } else {
-                    setGeneratedPdfName(filename);
-                    setShowSuccessDialog(true);
-                }
-            }
-
             toast.success('Consulta guardada correctamente');
             setActiveConsultation(newConsultation);
             reset(); // Clear everything on success
@@ -404,7 +314,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
         }
     };
 
-    const inputClass = "w-full p-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:ring-1 focus:ring-brand-500 outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+    const inputClass = "w-full bg-slate-50 border-none rounded-xl p-2.5 text-center text-sm font-bold text-brand-600 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
     return (
         <div className="h-full flex flex-col animate-in fade-in duration-500 bg-gray-50/50 relative">
@@ -420,46 +330,55 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                 }
              `}</style>
             <div className="flex-1 overflow-y-auto p-6">
-                <form className="max-w-[1600px] mx-auto space-y-6">
+                <form className="w-full space-y-6">
 
-                    {/* Header Minimal */}
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex flex-col gap-1">
-                            <h2 className="text-lg font-bold text-gray-800">
+                    {/* Header */}
+                    <div className="flex items-end justify-between mb-2">
+                        <div>
+                            <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 uppercase">
                                 {activeConsultation ? 'Consulta en Curso' : 'Registro Clínico'}
                             </h2>
-                            <span className="text-xs font-mono text-gray-400 w-fit rounded">
-                                {new Date().toLocaleDateString()}
-                            </span>
+                            <p className="text-sm text-slate-500 font-medium mt-0.5">
+                                {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
                         </div>
-                        <div className="hidden md:flex gap-3">
-                            <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading} className="bg-brand-600 hover:bg-brand-700 text-white shadow-sm">
-                                {isLoading ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-                                Guardar Consulta
-                            </Button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={handleSubmit(onSubmit)}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-md shadow-brand-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-60 disabled:pointer-events-none"
+                        >
+                            {isLoading
+                                ? <Loader2 className="h-4 w-4 animate-spin" />
+                                : <Save className="h-4 w-4" />
+                            }
+                            GUARDAR CONSULTA
+                        </button>
                     </div>
 
-                    <fieldset disabled={isLoading} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-stretch contents">
-                        {/* ROW 1: Diagnosis Search & Motivo (3/4) | Selected List (1/4) */}
-                        <div className="col-span-1 md:col-span-3 flex flex-col space-y-4">
-                            {/* Diagnosis Search (Top) */}
-                            <div className="space-y-2 relative">
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Diagnóstico (CIE-10)</label>
-                                <div className="relative">
+                    <fieldset disabled={isLoading} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                        {/* ═══ LEFT COLUMN (7/12) ═══ */}
+                        <div className="lg:col-span-7 space-y-4">
+
+                            {/* Diagnosis card — search + selected diagnoses together */}
+                            <div className="bg-white rounded-xl border border-brand-600/10 shadow-sm p-6">
+                                <label className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    Diagnóstico (CIE-10)
+                                </label>
+                                {/* Search */}
+                                <div className="relative mb-5">
                                     <input
                                         type="text"
-                                        className="w-full p-4 pl-10 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all font-medium text-gray-900 placeholder:text-gray-400"
-                                        placeholder="Buscar diagnóstico por código o nombre..."
+                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 text-sm text-slate-900 placeholder:text-slate-400"
+                                        placeholder="Buscar código o descripción CIE-10..."
                                         autoComplete="off"
                                         {...register('diagnosisSearch')}
                                         onFocus={() => diagnosisResults.length > 0 && setShowResults(true)}
                                     />
-                                    <div className="absolute left-3 top-4 text-gray-400">
-                                        {isSearching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                                     </div>
-
-                                    {/* Search Results Dropdown */}
                                     {showResults && (
                                         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 duration-200">
                                             <div className="max-h-60 overflow-y-auto">
@@ -482,25 +401,11 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                         </div>
                                     )}
                                 </div>
-                            </div>
 
-                            {/* Motivo (Bottom) */}
-                            <div className="space-y-2 flex-1 flex flex-col">
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Motivo de Consulta</label>
-                                <textarea
-                                    className="flex-1 w-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all min-h-[140px] resize-none font-medium text-lg"
-                                    placeholder="Describa el motivo principal de la visita..."
-                                    {...register('motivo')}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="col-span-1 md:col-span-1 flex flex-col space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Diagnósticos Seleccionados</label>
-                            <div className="flex-1 bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[220px] max-h-[220px]">
-                                <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                                {/* Selected diagnoses — inside the same card */}
+                                <div className="space-y-3">
                                     {selectedDiagnoses.length === 0 ? (
-                                        <div className="h-full flex items-center justify-center text-gray-300 text-xs font-medium uppercase tracking-widest text-center px-4">
+                                        <div className="py-6 flex items-center justify-center text-slate-300 text-xs font-medium uppercase tracking-widest text-center">
                                             Añada diagnósticos desde el buscador
                                         </div>
                                     ) : (
@@ -510,59 +415,52 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                             const isExisting = !!diag.existingStatus;
                                             const isActive = isExisting && !isInactive;
 
-                                            let bgColor = "bg-gray-50/50 border-gray-100";
-                                            let textColor = "text-gray-500";
-                                            let label = "P";
-                                            let labelColor = "text-gray-400";
-                                            let codeColor = "text-gray-400";
-                                            let subText = "Nuevo diagnóstico";
+                                            let bgColor = "bg-slate-50 border-slate-200";
+                                            let textColor = "text-slate-700";
+                                            let IconComp = Clock;
+                                            let iconColor = "text-slate-400";
+                                            let subText = "Pendiente de estudio";
 
                                             if (isInactive) {
-                                                label = "I";
                                                 subText = "Inactivo anteriormente";
-                                                if (isSelected) { // Activating
-                                                    bgColor = "bg-green-50 border-green-100";
-                                                    textColor = "text-green-700";
-                                                    labelColor = "text-green-600";
-                                                    codeColor = "text-green-600";
-                                                    label = "A";
+                                                if (isSelected) {
+                                                    bgColor = "bg-brand-50/40 border-brand-200/40";
+                                                    textColor = "text-brand-700";
+                                                    IconComp = CheckCircle2;
+                                                    iconColor = "text-brand-600";
                                                     subText = "Se activará en esta consulta";
                                                 } else {
                                                     bgColor = "bg-red-50 border-red-100";
-                                                    textColor = "text-red-700 text-opacity-70";
-                                                    labelColor = "text-red-400";
-                                                    codeColor = "text-red-400";
+                                                    textColor = "text-red-700/70";
+                                                    IconComp = XCircle;
+                                                    iconColor = "text-red-400";
                                                 }
                                             } else if (isActive) {
-                                                label = "A";
                                                 subText = "Ya activo para este paciente";
-                                                if (isSelected) { // Stays Active
-                                                    bgColor = "bg-green-50 border-green-100";
-                                                    textColor = "text-green-700";
-                                                    labelColor = "text-green-600";
-                                                    codeColor = "text-green-600";
-                                                } else { // Deactivating/Resolving
+                                                if (isSelected) {
+                                                    bgColor = "bg-brand-50/40 border-brand-200/40";
+                                                    textColor = "text-brand-700";
+                                                    IconComp = CheckCircle2;
+                                                    iconColor = "text-brand-600";
+                                                } else {
                                                     bgColor = "bg-red-50 border-red-100";
-                                                    textColor = "text-red-700 text-opacity-50";
-                                                    labelColor = "text-red-600";
-                                                    codeColor = "text-red-400";
-                                                    label = "R";
+                                                    textColor = "text-red-700/50";
+                                                    IconComp = MinusCircle;
+                                                    iconColor = "text-red-500";
                                                     subText = "Se marcará como resuelto";
                                                 }
-                                            } else { // New
-                                                if (!isSelected) { // Confirmed (Default)
-                                                    bgColor = "bg-green-50 border-green-100";
-                                                    textColor = "text-green-700";
-                                                    labelColor = "text-green-600";
-                                                    codeColor = "text-green-600";
-                                                    label = "A";
-                                                    subText = "Nuevo diagnóstico activo";
-                                                } else { // Pending
-                                                    bgColor = "bg-gray-50 border-gray-100";
-                                                    textColor = "text-gray-500";
-                                                    labelColor = "text-gray-400";
-                                                    codeColor = "text-gray-400";
-                                                    label = "P";
+                                            } else {
+                                                if (!isSelected) {
+                                                    bgColor = "bg-brand-50/40 border-brand-200/40";
+                                                    textColor = "text-brand-700";
+                                                    IconComp = CheckCircle2;
+                                                    iconColor = "text-brand-600";
+                                                    subText = "Confirmado · Principal";
+                                                } else {
+                                                    bgColor = "bg-slate-50 border-slate-200";
+                                                    textColor = "text-slate-600";
+                                                    IconComp = Clock;
+                                                    iconColor = "text-slate-400";
                                                     subText = "Pendiente de confirmar";
                                                 }
                                             }
@@ -570,22 +468,15 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                             return (
                                                 <div key={diag.code} className={`flex items-center justify-between p-3 border rounded-xl animate-in fade-in duration-200 group ${bgColor}`}>
                                                     <div className="flex items-center gap-3 overflow-hidden">
-                                                        <div className={`h-8 w-8 rounded-lg flex items-center justify-center border font-black text-xs shrink-0 ${labelColor} bg-white shadow-sm`}>
-                                                            {label}
-                                                        </div>
+                                                        <IconComp className={`h-5 w-5 shrink-0 ${iconColor}`} />
                                                         <div className="min-w-0">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className={`text-[10px] font-bold uppercase tracking-wider shrink-0 ${codeColor}`}>
-                                                                    {diag.code}
-                                                                </span>
-                                                                <h4 className={`text-sm font-bold truncate ${textColor}`}>
-                                                                    {diag.description}
-                                                                </h4>
-                                                            </div>
-                                                            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{subText}</p>
+                                                            <p className={`text-sm font-bold truncate ${textColor}`}>
+                                                                {diag.code} {diag.description}
+                                                            </p>
+                                                            <p className="text-xs text-slate-500 mt-0.5 truncate">{subText}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2 ml-3">
+                                                    <div className="flex items-center gap-1 ml-3 shrink-0">
                                                         <input
                                                             type="checkbox"
                                                             checked={diag.isPending}
@@ -597,7 +488,7 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                                             variant="ghost"
                                                             size="sm"
                                                             onClick={() => removeDiagnosis(diag.code)}
-                                                            className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                                            className="h-8 w-8 p-0 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg"
                                                         >
                                                             ×
                                                         </Button>
@@ -608,130 +499,138 @@ export function ConsultationPanel({ patientId }: ConsultationPanelProps) {
                                     )}
                                 </div>
                             </div>
-                        </div>
 
+                            {/* Motivo card */}
+                            <div className="bg-white rounded-xl border border-brand-600/10 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Motivo de consulta</h3>
+                                <textarea
+                                    className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 transition-all min-h-[100px] resize-none text-slate-900 placeholder:text-slate-400 text-sm"
+                                    placeholder="Describa el síntoma o motivo principal..."
+                                    {...register('motivo')}
+                                />
+                            </div>
 
-                        {/* ROW 2: Exploration (3/4) | Vitals (1/4) */}
-                        <div className="col-span-1 md:col-span-3 flex flex-col space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Exploración Física</label>
-                            <textarea
-                                className="flex-1 w-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all min-h-[200px]"
-                                placeholder="Hallazgos..."
-                                {...register('exploracion')}
-                            />
-                        </div>
+                            {/* Exploración física card */}
+                            <div className="bg-white rounded-xl border border-brand-600/10 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Exploración Física</h3>
+                                <textarea
+                                    className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 transition-all min-h-[100px] resize-none text-slate-900 placeholder:text-slate-400 text-sm"
+                                    placeholder="Hallazgos de la exploración física..."
+                                    {...register('exploracion')}
+                                />
+                            </div>
 
-                        <div className="col-span-1 md:col-span-1 flex flex-col space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Constantes Vitales</label>
-                            <div className="flex-1 bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4 flex flex-col justify-center">
+                            {/* Aproximación diagnóstica card */}
+                            <div className="bg-white rounded-xl border border-brand-600/10 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Aproximación Diagnóstica</h3>
+                                <textarea
+                                    className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 transition-all min-h-[100px] resize-none text-slate-900 placeholder:text-slate-400 text-sm"
+                                    placeholder="Juicio clínico y diagnósticos diferenciales..."
+                                    {...register('aproximacion')}
+                                />
+                            </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-2">
-                                        <label className="text-[10px] text-gray-400 font-bold uppercase mb-1 block">Tensión Arterial (mmHg)</label>
-                                        <div className="flex gap-2">
-                                            <input type="number" placeholder="Sys" {...register('systolic')} className={inputClass} />
-                                            <span className="self-center text-gray-400 font-bold">/</span>
-                                            <input type="number" placeholder="Dia" {...register('diastolic')} className={inputClass} />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-[10px] text-gray-400 font-bold uppercase mb-1 block">F. Cardíaca (lpm)</label>
-                                        <input type="number" {...register('heartRate')} className={inputClass} />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-gray-400 font-bold uppercase mb-1 block">SatO2 (%)</label>
-                                        <input type="number" {...register('satO2')} className={inputClass} />
-                                    </div>
-
-                                    <div>
-                                        <label className="text-[10px] text-gray-400 font-bold uppercase mb-1 block">Temp (ºC)</label>
-                                        <input type="number" step="0.1" {...register('temp')} className={inputClass} />
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] text-gray-400 font-bold uppercase mb-1 block">Peso (kg)</label>
-                                        <input type="number" step="0.1" {...register('weight')} className={inputClass} />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <label className="text-[10px] text-gray-400 font-bold uppercase mb-1 block">Altura (cm)</label>
-                                        <input type="number" step="1" {...register('height')} className={inputClass} />
-                                    </div>
-                                </div>
+                            {/* Tratamiento card */}
+                            <div className="bg-white rounded-xl border border-brand-600/10 shadow-sm p-6">
+                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Tratamiento y Plan</h3>
+                                <textarea
+                                    className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 transition-all min-h-[120px] resize-none text-slate-900 placeholder:text-slate-400 text-sm"
+                                    placeholder="Prescripciones, derivaciones y recomendaciones..."
+                                    {...register('tratamiento')}
+                                />
                             </div>
                         </div>
 
+                        {/* ═══ RIGHT COLUMN (5/12) ═══ */}
+                        <div className="lg:col-span-5 space-y-4">
 
-                        {/* ROW 3: Aproximacion (3/4) | Empty (1/4) */}
-                        <div className="col-span-1 md:col-span-3 space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Aproximación Diagnóstica</label>
-                            <textarea
-                                className="w-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all min-h-[100px]"
-                                placeholder="Impresión clínica..."
-                                {...register('aproximacion')}
-                            />
-                        </div>
-                        <div className="hidden md:block col-span-1">
-                            {/* Empty space only visible on desktop to maintain grid alignment */}
-                        </div>
+                            {/* Constantes Vitales card */}
+                            <div className="bg-white rounded-xl border border-brand-600/10 shadow-sm p-6">
+                                <div className="flex items-center justify-between mb-5">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Constantes Vitales</h3>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-slate-500 px-1 block">Tensión (S/D)</label>
+                                        <div className="flex gap-2">
+                                            <input type="number" placeholder="120" {...register('systolic')} className={inputClass} />
+                                            <span className="self-center text-slate-300 font-bold">/</span>
+                                            <input type="number" placeholder="80" {...register('diastolic')} className={inputClass} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-slate-500 px-1 block">Frec. Cardíaca</label>
+                                        <div className="relative">
+                                            <input type="number" placeholder="72" {...register('heartRate')} className={inputClass} />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">LPM</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-slate-500 px-1 block">SatO2 (%)</label>
+                                        <div className="relative">
+                                            <input type="number" placeholder="98" {...register('satO2')} className={inputClass} />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">%</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-slate-500 px-1 block">Temp. (ºC)</label>
+                                        <div className="relative">
+                                            <input type="number" step="0.1" placeholder="36.5" {...register('temp')} className={inputClass} />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">ºC</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-slate-500 px-1 block">Peso (Kg)</label>
+                                        <div className="relative">
+                                            <input type="number" step="0.1" placeholder="70.5" {...register('weight')} className={inputClass} />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">Kg</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-slate-500 px-1 block">Altura (cm)</label>
+                                        <div className="relative">
+                                            <input type="number" step="1" placeholder="175" {...register('height')} className={inputClass} />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-bold">cm</span>
+                                        </div>
+                                    </div>
+                                </div>
 
+                            </div>
 
-                        {/* ROW 4: Treatment (Full width) */}
-                        <div className="col-span-1 md:col-span-4 space-y-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Plan / Tratamiento</label>
-                            <textarea
-                                className="w-full p-4 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all min-h-[120px]"
-                                placeholder="Tratamiento y recomendaciones..."
-                                {...register('tratamiento')}
-                            />
-                        </div>
+                            {/* Notas Administrativas card */}
+                            <div className="bg-white rounded-xl border border-brand-600/10 shadow-sm p-6 opacity-80">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Notas Administrativas</h3>
+                                    <span className="text-[10px] uppercase font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-100">Próximamente</span>
+                                </div>
+                                <textarea
+                                    className="w-full min-h-[100px] bg-slate-100 border border-slate-200 rounded-xl p-4 text-sm resize-none cursor-not-allowed italic text-slate-400 placeholder:text-slate-400"
+                                    disabled
+                                    placeholder="Notas internas sobre facturación, seguros, autorizaciones..."
+                                />
+                                <p className="text-[10px] text-slate-400 italic mt-2">
+                                    Estas notas no se incluirán en el informe clínico
+                                </p>
+                            </div>
+                        </div>{/* end right column */}
 
-                        {/* Mobile Save Button (Bottom) */}
-                        <div className="col-span-1 md:hidden pt-4 pb-8">
-                            <Button type="button" onClick={handleSubmit(onSubmit)} disabled={isLoading} className="w-full h-12 text-lg bg-brand-600 hover:bg-brand-700 text-white shadow-md">
-                                {isLoading ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
-                                Guardar Consulta
-                            </Button>
+                        {/* Mobile Save Button */}
+                        <div className="lg:hidden col-span-1 pt-2 pb-6">
+                            <button
+                                type="button"
+                                onClick={handleSubmit(onSubmit)}
+                                disabled={isLoading}
+                                className="w-full flex items-center justify-center gap-2 py-3 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow-md"
+                            >
+                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                GUARDAR CONSULTA
+                            </button>
                         </div>
 
                     </fieldset>
                 </form>
             </div>
 
-            {/* Success Modal */}
-            <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-                <DialogContent className="sm:max-w-[500px] border-2 border-green-200">
-                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <div className="h-20 w-20 bg-green-50 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-300">
-                            <CheckCircle2 className="h-12 w-12 text-green-600" />
-                        </div>
-
-                        <h2 className="text-2xl font-black text-gray-900 mb-2">¡Consulta Guardada!</h2>
-                        <p className="text-gray-500 font-medium px-4">
-                            La información clínica se ha registrado correctamente y el documento administrativo se ha generado.
-                        </p>
-
-                        <div className="mt-8 w-full bg-gray-50 rounded-xl border border-gray-100 p-4 flex items-center gap-4">
-                            <div className="h-12 w-12 bg-white rounded-lg border border-gray-100 flex items-center justify-center shrink-0 shadow-sm">
-                                <FilePlus className="h-6 w-6 text-brand-600" />
-                            </div>
-                            <div className="text-left overflow-hidden">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Documento Generado</p>
-                                <p className="text-sm font-bold text-gray-900 truncate">{generatedPdfName}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <DialogFooter className="sm:justify-center border-t border-gray-100 pt-6">
-                        <Button
-                            className="bg-brand-600 hover:bg-brand-700 text-white min-w-[200px] h-11"
-                            onClick={() => setShowSuccessDialog(false)}
-                        >
-                            Entendido
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
