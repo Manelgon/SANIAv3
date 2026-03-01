@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar, User, FileText, Loader2, AlertCircle, History, Clock, Search, X } from 'lucide-react';
+import { Calendar, User, Loader2, AlertCircle, History, Clock, Search, X } from 'lucide-react';
 import { ConsultationDetailModal } from './ConsultationDetailModal';
 import { ConsultationHistoryModal } from '../modals/ConsultationHistoryModal';
 import { ConsultationTimer } from '../ConsultationTimer';

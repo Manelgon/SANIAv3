@@ -59,9 +59,9 @@ export function GeneralOverviewTab({ patient, onSwitchTab }: GeneralOverviewTabP
                     .limit(4),
             ]);
             return {
-                consultations: consultsRes.data || [],
-                diagnoses: diagRes.data || [],
-                documents: docsRes.data || [],
+                consultations: (consultsRes.data as any[]) || [],
+                diagnoses: (diagRes.data as any[]) || [],
+                documents: (docsRes.data as any[]) || [],
             };
         },
         staleTime: 2 * 60 * 1000,
@@ -90,8 +90,8 @@ export function GeneralOverviewTab({ patient, onSwitchTab }: GeneralOverviewTabP
     const imc = calculateIMC(patient.weight, patient.height);
     const imcCategory = imc
         ? parseFloat(imc) < 18.5 ? 'Bajo peso'
-        : parseFloat(imc) < 25 ? 'Normal'
-        : parseFloat(imc) < 30 ? 'Sobrepeso' : 'Obesidad'
+            : parseFloat(imc) < 25 ? 'Normal'
+                : parseFloat(imc) < 30 ? 'Sobrepeso' : 'Obesidad'
         : null;
 
     if (isLoading) {

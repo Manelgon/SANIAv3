@@ -1,4 +1,4 @@
-import { Activity, Thermometer, Scale, Ruler, Heart, Droplet } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import type { ConsultationConstant } from './types';
 
 interface ConsultationVitalsProps {
@@ -18,18 +18,7 @@ const CONSTANT_LABELS: Record<string, string> = {
 };
 
 export function ConsultationVitals({ constants, isEditMode = false, onUpdate }: ConsultationVitalsProps) {
-    const getIcon = (code: string) => {
-        switch (code) {
-            case 'WEIGHT': return <Scale className="h-4 w-4" />;
-            case 'HEIGHT': return <Ruler className="h-4 w-4" />;
-            case 'BP_SYS':
-            case 'BP_DIA': return <Activity className="h-4 w-4" />;
-            case 'HEART_RATE': return <Heart className="h-4 w-4" />;
-            case 'TEMP': return <Thermometer className="h-4 w-4" />;
-            case 'SATO2': return <Droplet className="h-4 w-4" />;
-            default: return <Activity className="h-4 w-4" />;
-        }
-    };
+
 
     return (
         <div className="w-full space-y-4">

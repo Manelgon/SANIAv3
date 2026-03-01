@@ -88,11 +88,14 @@ export default function PortalPage() {
     const fetchPatientData = async () => {
         if (!user?.id) return;
         try {
-            const [{ data: patientData }, { data: consultData }, { data: docsData }] = await Promise.all([
+            const [patientsRes, consultsRes, docsRes] = await Promise.all([
                 supabase.from('patients').select('*').eq('user_id', user.id).single(),
                 supabase.from('consultations').select('*').eq('patient_id', user.id).order('scheduled_at', { ascending: false }).limit(5),
                 supabase.from('patient_documents').select('*').eq('patient_id', user.id).order('created_at', { ascending: false }),
             ]);
+            const patientData = patientsRes.data as any;
+            const consultData = consultsRes.data as any;
+            const docsData = docsRes.data as any;
 
             if (patientData) setPatient(patientData as PatientProfile);
             if (consultData) {

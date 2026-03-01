@@ -172,7 +172,7 @@ export async function generateIAAnalysisPDF(data: IAAnalysisPDFData): Promise<{ 
         checkPage(20);
         drawSection('Recomendaciones');
         y += 2;
-        analysis.recommendations.forEach((rec: string, i: number) => {
+        analysis.recommendations.forEach((rec: string) => {
             checkPage(8);
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');

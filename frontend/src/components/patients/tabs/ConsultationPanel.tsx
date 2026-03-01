@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Search, Save, CheckCircle2, Clock, XCircle, MinusCircle, FilePlus } from 'lucide-react';
+import { Loader2, Search, Save, CheckCircle2, Clock, XCircle, MinusCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogFooter } from '@/components/ui/Dialog';
+
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 
 interface ConsultationPanelProps {
